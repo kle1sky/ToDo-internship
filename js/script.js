@@ -11,7 +11,7 @@ const clearAllBtn = document.querySelector(".footer__clearall");
 const localTasks = JSON.parse(localStorage.getItem('tasks'));
 let arrTasks = [];
 
-lastTasks()
+lastTasks() 
 
 /* Отправление значения инпута в list */
 todoInput.addEventListener('keydown', (e) => {
@@ -98,6 +98,12 @@ function deleteTask(event) {
 
         /* подсчет оставшихся задач */
         lastTasks()
+
+        const arrayActive = arrTasks.filter((el) => el.status == false)
+
+        if (tabActive.classList.contains("footer__tabs-active") && arrayActive.length == 0) {
+            document.querySelector('.todo-list-active').classList.remove('todo-list-welcome-hide')
+        }
 
         saveLocalstorage()
     }
