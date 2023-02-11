@@ -156,6 +156,10 @@ function markTask(event) {
         if (tabActive.classList.contains("footer__tabs-active") && arrayActive.length == 0) {
             document.querySelector('.todo-list-active').classList.remove('todo-list-welcome-hide')
         }
+
+        if (tabDone.classList.contains("footer__tabs-active") && arrayActive.length == arrTasks.length) {
+            document.querySelector('.todo-list-marked').classList.remove('todo-list-welcome-hide')
+        }
     }
 }
 
@@ -197,7 +201,19 @@ function markAlltasks() {
             }
         })
     }
+
+    if (tabDone.classList.contains("footer__tabs-active")) {
+        document.querySelector('.todo-list-marked').classList.remove('todo-list-welcome-hide')
+        todoList.innerHTML = '';
+    }
+
+    if (tabActive.classList.contains("footer__tabs-active")) {
+        document.querySelector('.todo-list-active').classList.remove('todo-list-welcome-hide')
+        todoList.innerHTML = '';
+    }
+
     lastTasks()
+    
 
     saveLocalstorage()
 }
