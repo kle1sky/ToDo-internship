@@ -34,8 +34,6 @@ if (!tabDone.classList.contains("footer__tabs-active")) {
             arrTasks.push(newTask)
         }
         checkTab(document.querySelector('.todo-list-active'));
-
-        renderTask(newTask)
         checkWelcome();
         lastTasks();
         checkStatusAll(arrTasks);
