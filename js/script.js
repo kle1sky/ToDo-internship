@@ -11,7 +11,29 @@ const clearAllBtn = document.querySelector(".footer__clearall");
 const localTasks = JSON.parse(localStorage.getItem('tasks'));
 let arrTasks = [];
 
-lastTasks() 
+
+todoInput.addEventListener('input', (e) => {
+    if (e.target.value === " ") {
+        e.target.value = "";
+    }
+})
+
+document.addEventListener('click', (el) => {
+    if (el.target != todoInput && todoInput.value) {
+        const newTask = {
+            id: Date.now(),
+            text: todoInput.value,
+            status: false,
+        };
+        todoInput.value = '';
+        todoInput.focus();
+        renderTask(newTask)
+        checkWelcome();
+        lastTasks();
+        checkStatusAll(arrTasks);
+        saveLocalstorage();
+    }
+})
 
 /* Отправление значения инпута в list */
 todoInput.addEventListener('keydown', (e) => {
@@ -21,23 +43,18 @@ todoInput.addEventListener('keydown', (e) => {
             text: e.target.value,
             status: false,
         };
-
-        showAll();
-        const tabsAll = document.querySelectorAll('.footer__tab')
-        tabsAll.forEach((item) => {
-            item.classList.remove("footer__tabs-active");
-        })
-        tabEvery.classList.add('footer__tabs-active')
-
-        renderTask(newTask)
-
         e.target.value = '';
         e.target.focus();
 
+        if (!tabDone.classList.contains("footer__tabs-active")) {
+            renderTask(newTask)
+        } else {
+            arrTasks.push(newTask)
+        }
+        checkTab(document.querySelector('.todo-list-active'));
         checkWelcome();
-
-        lastTasks()
-
+        lastTasks();
+        checkStatusAll(arrTasks);
         saveLocalstorage();
     }
 })
@@ -67,9 +84,9 @@ function renderTask(task, isView = false) {
               <img src="/img/trash_bin.png" alt="#" />
             </button>
           </li>`;
-          if (!isView) {
-            arrTasks.push(task);
-          }
+    if (!isView) {
+        arrTasks.push(task);
+    }
     todoList.insertAdjacentHTML('beforeend', taskHtml);
 }
 
@@ -130,7 +147,7 @@ function markTask(event) {
         const index = arrTasks.findIndex((task) => {
             return task.id === titleId;
         });
-            checkTab(titleNode);
+        checkTab(titleNode);
         arrTasks[index] = {
             ...arrTasks[index],
             status: !arrTasks[index].status
@@ -140,11 +157,6 @@ function markTask(event) {
         } else {
             titleNode.querySelector('input').setAttribute('checked', false);
         };
-        /* arrTasks.forEach((task) => {
-            if (task.status == false) {
-                checkboxForAll.setAttribute('checked', false);
-            }
-        }) */
 
         lastTasks()
 
@@ -167,10 +179,9 @@ function markTask(event) {
 
 function checkStatusAll(array) {
     const arrDone = array.filter((item) => item.status === true)
-    if(array.length === arrDone.length) {
+    if (array.length === arrDone.length) {
         checkboxForAll.setAttribute('checked', true)
-    }
-    else {
+    } else {
         checkboxForAll.setAttribute('checked', false)
     }
 }
@@ -184,12 +195,12 @@ function markAlltasks() {
 
     if (isChecked) {
         arrTasks.forEach((task, i) => {
-            if(task.status == true) {
-            task.status = false
-            todoTasks[i].querySelector("input").setAttribute('checked', false);
-            todoTasks[i].querySelector("span").classList.remove("todo-title-done");
-            checkboxForAll.setAttribute('checked', false);
-        }
+            if (task.status == true) {
+                task.status = false
+                todoTasks[i].querySelector("input").setAttribute('checked', false);
+                todoTasks[i].querySelector("span").classList.remove("todo-title-done");
+                checkboxForAll.setAttribute('checked', false);
+            }
         })
     } else {
         arrTasks.forEach((task, i) => {
@@ -213,8 +224,6 @@ function markAlltasks() {
     }
 
     lastTasks()
-    
-
     saveLocalstorage()
 }
 
@@ -239,19 +248,16 @@ function clearDone() {
 }
 
 /* Функции переключения вкладок */
-function chooseTab() {
-    const tabsAll = document.querySelectorAll('.footer__tab')
-    tabsAll.forEach((tab) => {
-        tab.addEventListener('click', (e) => {
-            e.preventDefault;
-            tabsAll.forEach((item) => {
-                item.classList.remove("footer__tabs-active");
-            })
-            tab.classList.add("footer__tabs-active");
+const tabsAll = document.querySelectorAll('.footer__tab')
+tabsAll.forEach((tab) => {
+    tab.addEventListener('click', (e) => {
+        e.preventDefault;
+        tabsAll.forEach((item) => {
+            item.classList.remove("footer__tabs-active");
         })
+        tab.classList.add("footer__tabs-active");
     })
-}
-
+})
 
 /* проверка какая вкладка открыта */
 function checkTab(node) {
@@ -269,9 +275,8 @@ tabDone.addEventListener('click', showDone)
 
 function showDone() {
     document.querySelector('.todo-list-active').classList.add('todo-list-welcome-hide')
-    chooseTab()
     const arrayDone = arrTasks.filter((el) => el.status == true)
-    if(arrayDone.length == 0) {
+    if (arrayDone.length == 0) {
         document.querySelector('.todo-list-marked').classList.remove('todo-list-welcome-hide')
     }
     todoList.innerHTML = '';
@@ -286,9 +291,8 @@ tabActive.addEventListener('click', showActive)
 
 function showActive() {
     document.querySelector('.todo-list-marked').classList.add('todo-list-welcome-hide')
-    chooseTab()
     const arrayActive = arrTasks.filter((el) => el.status == false)
-    if(arrayActive.length == 0) {
+    if (arrayActive.length == 0) {
         document.querySelector('.todo-list-active').classList.remove('todo-list-welcome-hide')
     }
     todoList.innerHTML = '';
@@ -304,11 +308,81 @@ tabEvery.addEventListener('click', showAll)
 function showAll() {
     document.querySelector('.todo-list-marked').classList.add('todo-list-welcome-hide')
     document.querySelector('.todo-list-active').classList.add('todo-list-welcome-hide')
-    chooseTab()
     todoList.innerHTML = '';
     arrTasks.forEach((item) => {
         renderTask(item, true)
     })
+}
+
+/* изменение задачи по дабл клику textContent*/
+todoList.addEventListener('dblclick', changeTask);
+
+function changeTask(event) {
+    if (event.target.classList.contains("todo-title")) {
+        /* убираем кнопку удалить */
+        const button = event.target.parentNode.querySelector('button');
+        button.classList.add('delete-hide');
+        const spanClass = event.target.classList.value;
+        const liElem = event.target.parentNode;
+
+        /* ищем нужный индекс элемента из массива */
+        const index = arrTasks.findIndex((task) => {
+            return task.id == event.target.parentNode.id;
+        })
+        const value = arrTasks[index].text
+
+        /* получаем название таска */
+        const spanTodo = event.target.closest('.todo-title');
+        const inputChange = document.createElement('input');
+        inputChange.setAttribute('type', "text");
+        inputChange.classList.add('input-change');
+        inputChange.value = spanTodo.textContent;
+
+        /* удаляем таск и заменяем на инпут */
+        spanTodo.parentNode.replaceChild(inputChange, spanTodo);
+        inputChange.focus();
+
+        /* меняем value у элемента массива и создаем разметку*/
+        inputChange.addEventListener('keydown', (e) => {
+            if (e.keyCode === 13) {
+                arrTasks[index] = {
+                    ...arrTasks[index],
+                    text: inputChange.value
+                }
+                inputChange.remove()
+                const newSpan = `<span class="${spanClass}">${arrTasks[index].text}</span>`;
+                button.insertAdjacentHTML('beforeBegin', newSpan)
+                button.classList.remove('delete-hide');
+                saveLocalstorage()
+            }
+            if (inputChange.value == "") {
+                arrTasks.splice(index, 1);
+                liElem.remove();
+                saveLocalstorage();
+                lastTasks();
+            }
+        })
+
+        document.addEventListener('click', (el) => {
+            if (el.target != inputChange && liElem.contains(inputChange)) {
+                arrTasks[index] = {
+                    ...arrTasks[index],
+                    text: inputChange.value
+                }
+                inputChange.remove()
+                const newSpan = `<span class="${spanClass}">${arrTasks[index].text}</span>`;
+                button.insertAdjacentHTML('beforeBegin', newSpan)
+                button.classList.remove('delete-hide');
+                saveLocalstorage()
+                if (inputChange.value == "") {
+                    arrTasks.splice(index, 1);
+                    liElem.remove();
+                    saveLocalstorage();
+                    lastTasks();
+                }
+            }
+        })
+    }
 }
 
 /* функция сохранения в localStorage */
@@ -324,3 +398,4 @@ function initTable() {
 }
 
 initTable()
+lastTasks()

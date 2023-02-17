@@ -126,7 +126,7 @@ h1 {
   outline: none;
   font-size: 18px;
   color: #4d4d4d;
-  height: 50px;
+  min-height: 50px;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   background-color: #fff;
@@ -138,6 +138,8 @@ h1 {
   margin-left: 18px;
   transition: all 0.3s ease;
   user-select: none;
+  word-break: break-all;
+  line-height: 1.7;
 }
 .todo-content .todo-task .todo-title-done {
   text-decoration: line-through;
@@ -148,13 +150,13 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 29px;
+  min-width: 29px;
   height: 29px;
   border: 1px solid rgba(0, 0, 0, 0.3);
   border-radius: 20px;
   margin-left: 4px;
 }
-.todo-content .todo-task input {
+.todo-content .todo-task .checkbox__list {
   display: none;
 }
 .todo-content .todo-task .custom-checkbox::before {
@@ -189,8 +191,24 @@ h1 {
   pointer-events: none;
   user-select: none;
 }
+.todo-content .todo-task .delete-hide {
+  display: none;
+}
 .todo-content .todo-task:hover .delete {
   opacity: 1;
+}
+.todo-content .todo-task .input-change {
+  font-family: Roboto;
+  outline: none;
+  margin-left: 16px;
+  font-size: 18px;
+  color: #4d4d4d;
+  background-color: #f6f6f6;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  width: 480px;
+  height: 40px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
 }
 
 .footer {
@@ -244,6 +262,10 @@ h1 {
 .footer__clearall {
   color: #4d4d4d;
   cursor: pointer;
+  transition: color 0.3s ease;
+}
+.footer__clearall:hover {
+  color: rgba(175, 47, 47, 0.5);
 }
 .footer-hide {
   display: none;
