@@ -168,8 +168,6 @@ function lastTasks() {
     counter.textContent = taskLast.length;
 }
 
-
-
 /* Отмечаем задачу как выполненную */
 
 todoList.addEventListener('click', markTask);
@@ -481,29 +479,32 @@ function initTable() {
         document.querySelectorAll(".footer__tab")[0].classList.add("footer__tabs-active")
     }
 
-    localTasks.forEach((item) => {
-        if (tabDone.classList.contains("footer__tabs-active")) {
-            const arrDone = arrTasks.filter((item) => item.status === true)
-            if (item.status === true) {
+    if (localTasks) {
+        localTasks.forEach((item) => {
+            if (tabDone.classList.contains("footer__tabs-active")) {
+                const arrDone = arrTasks.filter((item) => item.status === true)
+                if (item.status === true) {
+                    renderTask(item, true)
+                }
+                if (arrDone.length === 0) {
+                    document.querySelector('.todo-list-marked').classList.remove('todo-list-welcome-hide')
+                }
+            }
+            if (tabActive.classList.contains("footer__tabs-active")) {
+                const arrayActive = arrTasks.filter((el) => el.status == false)
+                if (item.status === false) {
+                    renderTask(item, true)
+                }
+                if (arrayActive.length === 0) {
+                    document.querySelector('.todo-list-active').classList.remove('todo-list-welcome-hide')
+                }
+            }
+            if (tabEvery.classList.contains("footer__tabs-active")) {
                 renderTask(item, true)
             }
-            if (arrDone.length === 0) {
-                document.querySelector('.todo-list-marked').classList.remove('todo-list-welcome-hide')
-            }
-        }
-        if (tabActive.classList.contains("footer__tabs-active")) {
-            const arrayActive = arrTasks.filter((el) => el.status == false)
-            if (item.status === false) {
-                renderTask(item, true)
-            }
-            if (arrayActive.length === 0) {
-                document.querySelector('.todo-list-active').classList.remove('todo-list-welcome-hide')
-            }
-        }
-        if (tabEvery.classList.contains("footer__tabs-active")) {
-            renderTask(item, true)
-        }
-    })
+        })
+    }
+
     checkWelcome()
     checkStatusAll(arrTasks)
 }
