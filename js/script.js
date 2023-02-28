@@ -48,7 +48,13 @@ document.addEventListener('click', (el) => {
         };
         todoInput.value = '';
         todoInput.focus();
-        renderTask(newTask)
+
+if (!tabDone.classList.contains("footer__tabs-active")) {
+            renderTask(newTask)
+        } else {
+            arrTasks.push(newTask)
+        }
+        checkTab(document.querySelector('.todo-list-active'));
         checkWelcome();
         lastTasks();
         checkStatusAll(arrTasks);
