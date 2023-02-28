@@ -49,7 +49,7 @@ document.addEventListener('click', (el) => {
         todoInput.value = '';
         todoInput.focus();
 
-if (!tabDone.classList.contains("footer__tabs-active")) {
+        if (!tabDone.classList.contains("footer__tabs-active")) {
             renderTask(newTask)
         } else {
             arrTasks.push(newTask)
@@ -467,15 +467,20 @@ function saveLocalstorage() {
 }
 
 function initTable() {
-    localTabs.forEach((tab) => {
-        if (tab.status == true) {
-            document.querySelectorAll('.footer__tab').forEach((item) => {
-                if (item.id == tab.id) {
-                    item.classList.add("footer__tabs-active")
-                }
-            })
-        }
-    })
+    if (localTabs) {
+        localTabs.forEach((tab) => {
+            if (tab.status == true) {
+                document.querySelectorAll('.footer__tab').forEach((item) => {
+                    if (item.id == tab.id) {
+                        item.classList.add("footer__tabs-active")
+                    }
+                })
+            }
+        })
+    } else {
+        document.querySelectorAll(".footer__tab")[0].classList.add("footer__tabs-active")
+    }
+
     localTasks.forEach((item) => {
         if (tabDone.classList.contains("footer__tabs-active")) {
             const arrDone = arrTasks.filter((item) => item.status === true)
