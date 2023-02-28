@@ -9,8 +9,29 @@ const footer = document.querySelector(".footer");
 const counter = document.querySelector(".counter");
 const clearAllBtn = document.querySelector(".footer__clearall");
 const localTasks = JSON.parse(localStorage.getItem('tasks'));
-let arrTasks = [];
+const localTabs = JSON.parse(localStorage.getItem('tabs'));
+let arrTasks = localTasks ? localTasks : [];
+let arrTabs = localTabs ? localTabs : [{
+    "status": true,
+    "id": "allTasks"
+}, {
+    "status": false,
+    "id": "doneTasks"
+}, {
+    "status": false,
+    "id": "activeTasks"
+}];
 
+/* функция, меняющая статус таба в массиве */
+function changeTabStatus(tab) {
+    arrTabs.forEach((item) => {
+        item.status = false
+        if (tab.id == item.id) {
+            item.status = true;
+        }
+    })
+    saveLocalstorage()
+}
 
 todoInput.addEventListener('input', (e) => {
     if (e.target.value === " ") {
@@ -51,6 +72,11 @@ todoInput.addEventListener('keydown', (e) => {
         } else {
             arrTasks.push(newTask)
         }
+
+        if (!todoList.querySelector("li")) {
+            document.querySelector(".todo-list-marked").classList.remove("todo-list-welcome-hide")
+        }
+
         checkTab(document.querySelector('.todo-list-active'));
         checkWelcome();
         lastTasks();
@@ -122,6 +148,10 @@ function deleteTask(event) {
             document.querySelector('.todo-list-active').classList.remove('todo-list-welcome-hide')
         }
 
+        if (tabDone.classList.contains("footer__tabs-active") && arrTasks.length == 0) {
+            checkboxForAll.setAttribute('checked', false);
+        }
+
         saveLocalstorage()
     }
 }
@@ -157,12 +187,6 @@ function markTask(event) {
         } else {
             titleNode.querySelector('input').setAttribute('checked', false);
         };
-
-        lastTasks()
-
-        checkStatusAll(arrTasks)
-        saveLocalstorage()
-
         const arrayActive = arrTasks.filter((el) => el.status == false)
 
         if (tabActive.classList.contains("footer__tabs-active") && arrayActive.length == 0) {
@@ -172,6 +196,9 @@ function markTask(event) {
         if (tabDone.classList.contains("footer__tabs-active") && arrayActive.length == arrTasks.length) {
             document.querySelector('.todo-list-marked').classList.remove('todo-list-welcome-hide')
         }
+        saveLocalstorage()
+        lastTasks()
+        checkStatusAll(arrTasks)
     }
 }
 
@@ -184,6 +211,9 @@ function checkStatusAll(array) {
     } else {
         checkboxForAll.setAttribute('checked', false)
     }
+    if (arrTasks.length == 0) {
+        checkboxForAll.setAttribute('checked', false)
+    }
 }
 
 /* Отмечаем все задачи, как выполненные */
@@ -193,7 +223,7 @@ function markAlltasks() {
     const todoTasks = document.querySelectorAll(".todo-task")
     const isChecked = checkboxForAll.getAttribute("checked") === "true";
 
-    if (isChecked) {
+    if (isChecked && tabEvery.classList.contains("footer__tabs-active")) {
         arrTasks.forEach((task, i) => {
             if (task.status == true) {
                 task.status = false
@@ -202,7 +232,8 @@ function markAlltasks() {
                 checkboxForAll.setAttribute('checked', false);
             }
         })
-    } else {
+    }
+    if (!isChecked && tabEvery.classList.contains("footer__tabs-active")) {
         arrTasks.forEach((task, i) => {
             if (task.status == false) {
                 task.status = true
@@ -212,17 +243,47 @@ function markAlltasks() {
             }
         })
     }
-
-    if (tabDone.classList.contains("footer__tabs-active")) {
+    if (tabDone.classList.contains("footer__tabs-active") && isChecked) {
+        arrTasks.forEach((task) => {
+            if (task.status == true) {
+                task.status = false
+                checkboxForAll.setAttribute('checked', false);
+            }
+        })
         document.querySelector('.todo-list-marked').classList.remove('todo-list-welcome-hide')
         todoList.innerHTML = '';
     }
 
-    if (tabActive.classList.contains("footer__tabs-active")) {
-        document.querySelector('.todo-list-active').classList.remove('todo-list-welcome-hide')
+    if (tabDone.classList.contains("footer__tabs-active") && !isChecked) {
+        arrTasks.forEach((task) => {
+            if (task.status == false) {
+                task.status = true
+                checkboxForAll.setAttribute('checked', true);
+                showDone();
+            }
+        })
+    }
+
+    if (tabActive.classList.contains("footer__tabs-active") && !isChecked && arrTasks.length > 0) {
+        arrTasks.forEach((task) => {
+            if (task.status == false) {
+                task.status = true
+                checkboxForAll.setAttribute('checked', true);
+            }
+        })
+        document.querySelector('.todo-list-active').classList.remove('todo-task-hide', 'todo-list-welcome-hide')
         todoList.innerHTML = '';
     }
 
+    if (tabActive.classList.contains("footer__tabs-active") && isChecked) {
+        arrTasks.forEach((task) => {
+            if (task.status == true) {
+                task.status = false
+                checkboxForAll.setAttribute('checked', false);
+                showActive();
+            }
+        })
+    }
     lastTasks()
     saveLocalstorage()
 }
@@ -233,7 +294,6 @@ clearAllBtn.addEventListener('click', clearDone)
 function clearDone() {
     const newTask = arrTasks.filter((el) => el.status == false);
     arrTasks = newTask;
-    saveLocalstorage()
     todoList.innerHTML = '';
     arrTasks.forEach((task) => {
         renderTask(task, true)
@@ -244,6 +304,10 @@ function clearDone() {
         todoList.innerHTML = '';
         document.querySelector('.todo-list-marked').classList.remove('todo-list-welcome-hide')
     }
+    if (tabActive.classList.contains("footer__tabs-active") && arrTasks.length == 0) {
+        document.querySelector('.todo-list-active').classList.add('todo-list-welcome-hide')
+    }
+    saveLocalstorage()
     lastTasks()
 }
 
@@ -274,6 +338,8 @@ const tabDone = document.querySelector('#doneTasks')
 tabDone.addEventListener('click', showDone)
 
 function showDone() {
+    changeTabStatus(tabDone)
+    document.querySelector('.todo-list-marked').classList.add('todo-list-welcome-hide');
     document.querySelector('.todo-list-active').classList.add('todo-list-welcome-hide')
     const arrayDone = arrTasks.filter((el) => el.status == true)
     if (arrayDone.length == 0) {
@@ -290,6 +356,8 @@ const tabActive = document.querySelector('#activeTasks')
 tabActive.addEventListener('click', showActive)
 
 function showActive() {
+    changeTabStatus(tabActive)
+    document.querySelector('.todo-list-active').classList.add('todo-list-welcome-hide')
     document.querySelector('.todo-list-marked').classList.add('todo-list-welcome-hide')
     const arrayActive = arrTasks.filter((el) => el.status == false)
     if (arrayActive.length == 0) {
@@ -306,6 +374,7 @@ const tabEvery = document.querySelector('#allTasks')
 tabEvery.addEventListener('click', showAll)
 
 function showAll() {
+    changeTabStatus(tabEvery)
     document.querySelector('.todo-list-marked').classList.add('todo-list-welcome-hide')
     document.querySelector('.todo-list-active').classList.add('todo-list-welcome-hide')
     todoList.innerHTML = '';
@@ -388,14 +457,44 @@ function changeTask(event) {
 /* функция сохранения в localStorage */
 function saveLocalstorage() {
     localStorage.setItem("tasks", JSON.stringify(arrTasks));
+    localStorage.setItem("tabs", JSON.stringify(arrTabs));
 }
 
 function initTable() {
-    localTasks.forEach((el) => {
-        renderTask(el)
+    localTabs.forEach((tab) => {
+        if (tab.status == true) {
+            document.querySelectorAll('.footer__tab').forEach((item) => {
+                if (item.id == tab.id) {
+                    item.classList.add("footer__tabs-active")
+                }
+            })
+        }
+    })
+    localTasks.forEach((item) => {
+        if (tabDone.classList.contains("footer__tabs-active")) {
+            const arrDone = arrTasks.filter((item) => item.status === true)
+            if (item.status === true) {
+                renderTask(item, true)
+            }
+            if (arrDone.length === 0) {
+                document.querySelector('.todo-list-marked').classList.remove('todo-list-welcome-hide')
+            }
+        }
+        if (tabActive.classList.contains("footer__tabs-active")) {
+            const arrayActive = arrTasks.filter((el) => el.status == false)
+            if (item.status === false) {
+                renderTask(item, true)
+            }
+            if (arrayActive.length === 0) {
+                document.querySelector('.todo-list-active').classList.remove('todo-list-welcome-hide')
+            }
+        }
+        if (tabEvery.classList.contains("footer__tabs-active")) {
+            renderTask(item, true)
+        }
     })
     checkWelcome()
+    checkStatusAll(arrTasks)
 }
-
 initTable()
 lastTasks()
