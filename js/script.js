@@ -428,11 +428,12 @@ function changeTask(event) {
                 button.classList.remove('delete-hide');
                 saveLocalstorage()
             }
-            if (inputChange.value == "") {
+            if (inputChange.value == "" && e.keyCode !== 8) {
                 arrTasks.splice(index, 1);
                 liElem.remove();
                 saveLocalstorage();
                 lastTasks();
+
             }
         })
 
