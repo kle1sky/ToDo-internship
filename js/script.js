@@ -427,13 +427,12 @@ function changeTask(event) {
                 button.insertAdjacentHTML('beforeBegin', newSpan)
                 button.classList.remove('delete-hide');
                 saveLocalstorage()
-            }
-            if (inputChange.value == "" && e.keyCode !== 8) {
-                arrTasks.splice(index, 1);
-                liElem.remove();
-                saveLocalstorage();
-                lastTasks();
-
+                if (inputChange.value == "") {
+                    arrTasks.splice(index, 1);
+                    liElem.remove();
+                    saveLocalstorage();
+                    lastTasks();
+                }
             }
         })
 
