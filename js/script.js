@@ -5,7 +5,7 @@ const tabEvery = document.querySelector('#tabEvery')
 const checkbox = document.querySelectorAll(".checkbox__list");
 const todoInput = document.querySelector(".todo__input");
 const todoList = document.querySelector(".todo-list");
-const welcomeList = document.querySelector(".todo-list-welcome");
+const noTaskScreen = document.querySelector(".todo-list-welcome");
 const checkboxForAll = document.querySelector("#checkAll");
 const footer = document.querySelector(".footer");
 const counter = document.querySelector(".counter");
@@ -14,22 +14,22 @@ const localTasks = JSON.parse(localStorage.getItem('tasks'));
 const localTabs = JSON.parse(localStorage.getItem('tabs'));
 let arrTasks = localTasks ? localTasks : [];
 let arrTabs = localTabs ? localTabs : [{
-    "status": true,
+    "isOpen": true,
     "id": "tabEvery"
 }, {
-    "status": false,
+    "isOpen": false,
     "id": "tabDone"
 }, {
-    "status": false,
+    "isOpen": false,
     "id": "tabActive"
 }];
 
 /* функция, меняющая статус таба в массиве */
 function changeTabStatus(tab) {
     arrTabs.forEach((item) => {
-        item.status = false
-        if (tab == item.id) {
-            item.status = true;
+        item.isOpen = false
+        if (tab === item.id) {
+            item.isOpen = true;
         }
     })
     saveLocalstorage()
@@ -41,8 +41,8 @@ todoInput.addEventListener('input', (e) => {
     }
 })
 
-function saveFunctions(word) {
-    checkWelcomeScreen();
+function handleTasksAndToggleScreen(word) {
+    toggleWelcomeScreen();
     lastTasks();
     saveLocalstorage();
     if (word === "withCheckStatus") {
@@ -54,7 +54,7 @@ function pushTask() {
     const newTask = {
         id: Date.now(),
         text: todoInput.value,
-        status: "isActive",
+        isDone: false,
     };
     todoInput.value = '';
     todoInput.focus();
@@ -63,7 +63,7 @@ function pushTask() {
     } else {
         arrTasks.push(newTask)
     }
-    saveFunctions("withCheckStatus");
+    handleTasksAndToggleScreen("withCheckStatus");
 }
 
 /* отправка таска в массив по клику вне инпута */
@@ -81,40 +81,42 @@ todoInput.addEventListener('keydown', (e) => {
 })
 
 /* Приветственный экран */
-function checkWelcomeScreen() {
-    const arrayActive = arrTasks.filter((el) => el.status == "isActive")
-    const arrayDone = arrTasks.filter((el) => el.status == "isDone");
+function toggleWelcomeScreen() {
+    const arrayActive = arrTasks.filter((el) => el.isDone === false)
+    const arrayDone = arrTasks.filter((el) => el.isDone === true);
+    const isTabDone = tabDone.classList.contains("footer__tabs-active");
+    const isTabActive = tabActive.classList.contains("footer__tabs-active");
 
-    if (arrTasks.length > 0) {
-        welcomeList.classList.add('todo-list-welcome-hide');
+    if (arrTasks.length !== 0) {
+        noTaskScreen.classList.add('todo-list-welcome-hide');
         footer.classList.remove("footer-hide");
     } else {
-        welcomeList.classList.remove('todo-list-welcome-hide');
+        noTaskScreen.classList.remove('todo-list-welcome-hide');
         footer.classList.add("footer-hide");
     }
 
-    if (tabDone.classList.contains("footer__tabs-active") && arrayDone.length > 0) {
+    if (isTabDone && arrayDone.length !== 0) {
         document.querySelector(".todo-list-marked").classList.add('todo-list-welcome-hide')
     }
-    if (tabDone.classList.contains("footer__tabs-active") && arrayDone.length === 0 && arrTasks.length > 0) {
+    if (isTabDone && arrayDone.length === 0 && arrTasks.length !== 0) {
         document.querySelector(".todo-list-marked").classList.remove('todo-list-welcome-hide')
     }
 
-    if (tabActive.classList.contains("footer__tabs-active") && arrayActive.length > 0) {
+    if (isTabActive && arrayActive.length !== 0) {
         document.querySelector(".todo-list-active").classList.add('todo-list-welcome-hide')
     }
-    if (tabActive.classList.contains("footer__tabs-active") && arrayActive.length === 0 && arrTasks.length > 0) {
+    if (isTabActive && arrayActive.length === 0 && arrTasks.length !== 0) {
         document.querySelector(".todo-list-active").classList.remove('todo-list-welcome-hide')
     }
-    if (tabActive.classList.contains("footer__tabs-active") && arrayActive.length === 0 && arrTasks.length === 0) {
+    if (isTabActive && arrayActive.length === 0 && arrTasks.length === 0) {
         document.querySelector(".todo-list-active").classList.add('todo-list-welcome-hide')
     }
 }
 
 /* рендер задач */
 function renderTask(task, isView = false) {
-    const spanClass = (task.status === "isActive") ? 'todo-title' : 'todo-title todo-title-done';
-    const checkboxStatus = (task.status === "isActive") ? false : true
+    const spanClass = (task.isDone === false) ? 'todo-title' : 'todo-title todo-title-done';
+    const checkboxStatus = (task.isDone === false) ? false : true
     const taskHtml = `<li id="${task.id}" class="todo-task">
             <label class="completed">
               <input type="checkbox" class="checkbox__list" checked="${checkboxStatus}"/>
@@ -147,16 +149,16 @@ function deleteTask(event) {
         /* удаляем элемент из массива */
         arrTasks.splice(index, 1);
 
-        if (tabDone.classList.contains("footer__tabs-active") && arrTasks.length == 0) {
+        if (tabDone.classList.contains("footer__tabs-active") && arrTasks.length === 0) {
             checkboxForAll.setAttribute('checked', false);
         }
-        saveFunctions("withCheckStatus");
+        handleTasksAndToggleScreen("withCheckStatus");
     }
 }
 
 /* подсчет оставшихся задач */
 function lastTasks() {
-    const taskLast = arrTasks.filter((item) => item.status == "isActive")
+    const taskLast = arrTasks.filter((item) => item.isDone === false)
     counter.textContent = taskLast.length;
 }
 
@@ -180,27 +182,27 @@ function markTask(event) {
         }
         arrTasks[index] = {
             ...arrTasks[index],
-            status: (arrTasks[index].status === "isActive") ? "isDone" : "isActive"
+            isDone: (arrTasks[index].isDone === false) ? true : false
         };
-        if (arrTasks[index].status == "isDone") {
+        if (arrTasks[index].isDone === true) {
             titleNode.querySelector('input').setAttribute('checked', true);
         } else {
             titleNode.querySelector('input').setAttribute('checked', false);
         };
-        saveFunctions("withCheckStatus");
+        handleTasksAndToggleScreen("withCheckStatus");
     }
 }
 
 /* проверка всех задач */
 
 function checkStatusAll(array) {
-    const arrDone = array.filter((item) => item.status === "isDone")
+    const arrDone = array.filter((item) => item.isDone === true)
     if (array.length === arrDone.length) {
         checkboxForAll.setAttribute('checked', true)
     } else {
         checkboxForAll.setAttribute('checked', false)
     }
-    if (arrTasks.length == 0) {
+    if (arrTasks.length === 0) {
         checkboxForAll.setAttribute('checked', false)
     }
 }
@@ -215,8 +217,8 @@ function markAllTasks() {
     function changeTaskStatus(word) {
         arrTasks.forEach((task, i) => {
             if (isChecked) {
-                if (task.status === "isDone") {
-                    task.status = "isActive"
+                if (task.isDone === true) {
+                    task.isDone = false
                     checkboxForAll.setAttribute('checked', false);
                     if (word === "forAll") {
                         todoTasks[i].querySelector("input").setAttribute('checked', false);
@@ -224,7 +226,7 @@ function markAllTasks() {
                     }
                 }
             } else {
-                task.status = "isDone"
+                task.isDone = true
                 checkboxForAll.setAttribute('checked', true);
                 if (word === "forAll") {
                     todoTasks[i].querySelector("input").setAttribute('checked', true);
@@ -254,7 +256,7 @@ function markAllTasks() {
         showTab('tabDone');
     }
 
-    if (tabActive.classList.contains("footer__tabs-active") && !isChecked && arrTasks.length > 0) {
+    if (tabActive.classList.contains("footer__tabs-active") && !isChecked && arrTasks.length !== 0) {
         changeTaskStatus();
         document.querySelector('.todo-list-active').classList.remove('todo-list-welcome-hide')
         todoList.innerHTML = '';
@@ -267,17 +269,17 @@ function markAllTasks() {
 clearAllBtn.addEventListener('click', clearDone)
 
 function clearDone() {
-    const newTask = arrTasks.filter((el) => el.status == "isActive");
+    const newTask = arrTasks.filter((el) => el.isDone === false);
     arrTasks = newTask;
     todoList.innerHTML = '';
     arrTasks.forEach((task) => {
         renderTask(task, true)
     })
     checkboxForAll.setAttribute('checked', false)
-    if (tabDone.classList.contains("footer__tabs-active") && arrTasks.length > 0) {
+    if (tabDone.classList.contains("footer__tabs-active") && arrTasks.length !== 0) {
         todoList.innerHTML = '';
     }
-    saveFunctions();
+    handleTasksAndToggleScreen();
 }
 
 /* Функции переключения вкладок */
@@ -310,13 +312,13 @@ function showTab(tabName) {
     todoList.innerHTML = '';
     let arrayTasks;
     if (tabName === 'tabDone') {
-        arrayTasks = arrTasks.filter((el) => el.status == "isDone");
+        arrayTasks = arrTasks.filter((el) => el.isDone === true);
     } else if (tabName === 'tabActive') {
-        arrayTasks = arrTasks.filter((el) => el.status == "isActive");
+        arrayTasks = arrTasks.filter((el) => el.isDone === false);
     } else {
         arrayTasks = arrTasks;
     }
-    checkWelcomeScreen();
+    toggleWelcomeScreen();
     arrayTasks.forEach((item) => {
         renderTask(item, true);
     });
@@ -335,7 +337,7 @@ function changeTask(event) {
     const spanTodo = event.target.closest('.todo-title');
     const inputChange = document.createElement('input');
     const index = arrTasks.findIndex((task) => {
-        return task.id == event.target.parentNode.id;
+        return task.id === event.target.parentNode.id;
     })
     button.classList.add('delete-hide');
 
@@ -356,10 +358,10 @@ function changeTask(event) {
         button.insertAdjacentHTML('beforeBegin', newSpan)
         button.classList.remove('delete-hide');
         saveLocalstorage()
-        if (inputChange.value == "") {
+        if (inputChange.value === "") {
             arrTasks.splice(index, 1);
             liElem.remove();
-            saveFunctions();
+            handleTasksAndToggleScreen();
         }
     }
 
@@ -385,7 +387,7 @@ function saveLocalstorage() {
 function initTable() {
     if (localTabs) {
         localTabs.forEach(tab => {
-            if (tab.status == true) {
+            if (tab.isOpen === true) {
                 document.querySelector(`#${tab.id}`).classList.add("footer__tabs-active");
             }
         });
@@ -396,21 +398,21 @@ function initTable() {
     if (localTasks) {
         localTasks.forEach(item => {
             const activeTab = document.querySelector('.footer__tabs-active');
-            const status = item.status;
-            if (activeTab === tabDone && status === 'isDone' ||
-                activeTab === tabActive && status === 'isActive' ||
+            const status = item.isDone;
+            if (activeTab === tabDone && status === true ||
+                activeTab === tabActive && status === false ||
                 activeTab === tabEvery) {
                 renderTask(item, true);
-                if (activeTab === tabDone && arrTasks.filter(i => i.status === 'isDone').length === 0) {
+                if (activeTab === tabDone && arrTasks.filter(i => i.isDone === true).length === 0) {
                     document.querySelector('.todo-list-marked').classList.remove('todo-list-welcome-hide');
-                } else if (activeTab === tabActive && arrTasks.filter(i => i.status === 'isActive').length === 0) {
+                } else if (activeTab === tabActive && arrTasks.filter(i => i.isDone === false).length === 0) {
                     document.querySelector('.todo-list-active').classList.remove('todo-list-welcome-hide');
                 }
             }
         });
     }
 
-    checkWelcomeScreen()
+    toggleWelcomeScreen()
     checkStatusAll(arrTasks)
 }
 initTable()
