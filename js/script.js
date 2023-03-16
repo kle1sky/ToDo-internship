@@ -1,4 +1,3 @@
-/* Все переменные */
 const tabDone = document.querySelector('#tabDone');
 const tabActive = document.querySelector('#tabActive');
 const tabEvery = document.querySelector('#tabEvery');
@@ -26,7 +25,6 @@ let arrTabs = localTabs ? localTabs : [{
     "id": "tabActive"
 }];
 
-/* функция, меняющая статус таба в массиве */
 function changeTabStatus(tab) {
     arrTabs.forEach((item) => {
         item.isOpen = false
@@ -82,7 +80,6 @@ todoInput.addEventListener('keydown', (e) => {
     };
 });
 
-/* Приветственный экран */
 function checkCurrentTasks() {
     const arrayActive = arrTasks.filter((el) => el.isDone === false);
     const arrayDone = arrTasks.filter((el) => el.isDone);
@@ -116,7 +113,6 @@ function checkCurrentTasks() {
     };
 };
 
-/* рендер задач */
 function renderTask(task, isView = false) {
     const spanClass = task.isDone ? 'todo-title todo-title-done' : 'todo-title';
     const checkboxStatus = task.isDone ? true : false;
@@ -136,7 +132,6 @@ function renderTask(task, isView = false) {
     todoList.insertAdjacentHTML('beforeend', taskHtml);
 };
 
-/* Удаление задачи по нажатию на кнопке */
 todoList.addEventListener('click', deleteTask);
 
 function deleteTask(event) {
@@ -157,13 +152,11 @@ function deleteTask(event) {
     };
 };
 
-/* подсчет оставшихся задач */
 function lastTasks() {
     const taskLast = arrTasks.filter((item) => item.isDone === false);
     counter.textContent = taskLast.length;
 };
 
-/* Отмечаем задачу как выполненную */
 todoList.addEventListener('click', markTask);
 
 function markTask(event) {
@@ -194,7 +187,6 @@ function markTask(event) {
     };
 };
 
-/* проверка всех задач */
 function checkStatusAll(array) {
     const arrDone = array.filter((item) => item.isDone);
     if (array.length === arrDone.length) {
@@ -207,7 +199,6 @@ function checkStatusAll(array) {
     };
 };
 
-/* Отмечаем все задачи, как выполненные */
 checkboxForAll.addEventListener('change', markAllTasks);
 
 function markAllTasks() {
@@ -266,7 +257,6 @@ function changeTaskStatus(forAll = false) {
     });
 };
 
-/* Удаляем все сделанные задачи */
 clearAllBtn.addEventListener('click', clearDone);
 
 function clearDone() {
@@ -283,7 +273,6 @@ function clearDone() {
     viewCurrentTab();
 };
 
-/* Функции переключения вкладок */
 const tabsAll = document.querySelectorAll('.footer__tab');
 tabsAll.forEach((tab) => {
     tab.addEventListener('click', (e) => {
@@ -295,14 +284,13 @@ tabsAll.forEach((tab) => {
     });
 });
 
-/* функции отображения контента на вкладках */
-tabDone.addEventListener('click', function () {
+tabDone.addEventListener('click', () => {
     showTab('tabDone');
 });
-tabActive.addEventListener('click', function () {
+tabActive.addEventListener('click', () => {
     showTab('tabActive');
 });
-tabEvery.addEventListener('click', function () {
+tabEvery.addEventListener('click', () => {
     showTab('tabEvery');
 });
 
@@ -325,7 +313,6 @@ function showTab(tabName) {
     });
 };
 
-/* изменение задачи по дабл клику textContent*/
 todoList.addEventListener('dblclick', changeTask);
 
 function changeTask(event) {
