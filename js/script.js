@@ -86,6 +86,8 @@ function checkCurrentTasks() {
     const isTabDone = tabDone.classList.contains("footer__tabs-active");
     const isTabActive = tabActive.classList.contains("footer__tabs-active");
     const isTasksEmpty = arrTasks.length === 0;
+    const doneTasksEmpty = arrayDone.length === 0;
+    const activeTasksEmpty = arrayActive.length === 0;
 
     if (!isTasksEmpty) {
         noTaskScreen.classList.add('todo-list-welcome-hide');
@@ -95,21 +97,21 @@ function checkCurrentTasks() {
         footer.classList.add("footer-hide");
     };
 
-    if (isTabDone && arrayDone.length !== 0) {
-        document.querySelector(".todo-list-marked").classList.add('todo-list-welcome-hide');
+    if (isTabDone && !doneTasksEmpty) {
+        todoScreenDone.classList.add('todo-list-welcome-hide');
     };
-    if (isTabDone && arrayDone.length === 0 && !isTasksEmpty) {
-        document.querySelector(".todo-list-marked").classList.remove('todo-list-welcome-hide');
+    if (isTabDone && doneTasksEmpty && !isTasksEmpty) {
+        todoScreenDone.classList.remove('todo-list-welcome-hide');
     };
 
-    if (isTabActive && arrayActive.length !== 0) {
-        document.querySelector(".todo-list-active").classList.add('todo-list-welcome-hide');
+    if (isTabActive && !activeTasksEmpty) {
+        todoScreenActive.classList.add('todo-list-welcome-hide');
     };
-    if (isTabActive && arrayActive.length === 0 && !isTasksEmpty) {
-        document.querySelector(".todo-list-active").classList.remove('todo-list-welcome-hide');
+    if (isTabActive && activeTasksEmpty && !isTasksEmpty) {
+        todoScreenActive.classList.remove('todo-list-welcome-hide');
     };
-    if (isTabActive && arrayActive.length === 0 && isTasksEmpty) {
-        document.querySelector(".todo-list-active").classList.add('todo-list-welcome-hide');
+    if (isTabActive && activeTasksEmpty && isTasksEmpty) {
+        todoScreenActive.classList.add('todo-list-welcome-hide');
     };
 };
 
@@ -136,10 +138,10 @@ todoList.addEventListener('click', deleteTask);
 
 function deleteTask(event) {
     if (event.target.classList.contains("delete")) {
-        const parentNode = event.target.closest('.todo-task');
-        parentNode.remove();
+        const task = event.target.closest('.todo-task');
+        task.remove();
 
-        const listId = +parentNode.id;
+        const listId = +task.id;
         const index = arrTasks.findIndex((task) => {
             return task.id === listId;
         });
@@ -161,27 +163,27 @@ todoList.addEventListener('click', markTask);
 
 function markTask(event) {
     if (event.target.classList.contains("completed")) {
-        const titleNode = event.target.closest('.todo-task');
-        const todoTitle = titleNode.querySelector(".todo-title");
+        const task = event.target.closest('.todo-task');
+        const todoTitle = task.querySelector(".todo-title");
         todoTitle.classList.toggle("todo-title-done");
-        const titleId = +titleNode.id;
+        const titleId = +task.id;
         const index = arrTasks.findIndex((task) => {
             return task.id === titleId;
         });
         if (tabDone.classList.contains("footer__tabs-active")) {
-            titleNode.classList.add("todo-task-hide");
+            task.classList.add("todo-task-hide");
         };
         if (tabActive.classList.contains("footer__tabs-active")) {
-            titleNode.classList.add("todo-task-hide");
+            task.classList.add("todo-task-hide");
         };
         arrTasks[index] = {
             ...arrTasks[index],
             isDone: arrTasks[index].isDone ? false : true
         };
         if (arrTasks[index].isDone) {
-            titleNode.querySelector('input').setAttribute('checked', true);
+            task.querySelector('input').setAttribute('checked', true);
         } else {
-            titleNode.querySelector('input').setAttribute('checked', false);
+            task.querySelector('input').setAttribute('checked', false);
         };
         viewCurrentTab(true);
     };
@@ -203,28 +205,31 @@ checkboxForAll.addEventListener('change', markAllTasks);
 
 function markAllTasks() {
     const isChecked = checkboxForAll.getAttribute("checked") === "true";
+    const isTabDone = tabDone.classList.contains("footer__tabs-active");
+    const isTabActive = tabActive.classList.contains("footer__tabs-active");
+    const isTabEvery = tabEvery.classList.contains("footer__tabs-active")
 
-    if (tabEvery.classList.contains("footer__tabs-active")) {
+    if (isTabEvery) {
         changeTaskStatus(true);
     };
 
-    if (tabDone.classList.contains("footer__tabs-active") && isChecked) {
+    if (isTabDone && isChecked) {
         changeTaskStatus();
         todoScreenDone.classList.remove('todo-list-welcome-hide');
         todoList.innerHTML = '';
     };
 
-    if (tabActive.classList.contains("footer__tabs-active") && isChecked) {
+    if (isTabActive && isChecked) {
         changeTaskStatus();
         showTab('tabActive');
     };
 
-    if (tabDone.classList.contains("footer__tabs-active") && !isChecked) {
+    if (isTabDone && !isChecked) {
         changeTaskStatus();
         showTab('tabDone');
     };
 
-    if (tabActive.classList.contains("footer__tabs-active") && !isChecked && arrTasks.length !== 0) {
+    if (isTabActive && !isChecked && arrTasks.length !== 0) {
         changeTaskStatus();
         todoScreenActive.classList.remove('todo-list-welcome-hide');
         todoList.innerHTML = '';
@@ -260,8 +265,8 @@ function changeTaskStatus(forAll = false) {
 clearAllBtn.addEventListener('click', clearDone);
 
 function clearDone() {
-    const newTask = arrTasks.filter((el) => el.isDone === false);
-    arrTasks = newTask;
+    const arrayNew = arrTasks.filter((el) => el.isDone === false);
+    arrTasks = arrayNew;
     todoList.innerHTML = '';
     arrTasks.forEach((task) => {
         renderTask(task, true);
@@ -361,7 +366,7 @@ function changeTask(event) {
     });
 
     document.addEventListener('click', (el) => {
-        if (el.target != inputChange && liElem.contains(inputChange)) {
+        if (el.target !== inputChange && liElem.contains(inputChange)) {
             saveChanges();
         };
     });
@@ -373,8 +378,6 @@ function saveLocalstorage() {
 }
 
 function initTable() {
-    const activeTab = document.querySelector('.footer__tabs-active');
-
     if (localTabs) {
         localTabs.forEach(tab => {
             if (tab.isOpen) {
@@ -398,19 +401,19 @@ function initTable() {
             if ((isTabDone && isDone) || (isTabActive && isActive) || activeTab === tabEvery) {
                 renderTask(task, true);
 
-                const isAllDone = isTabDone && arrTasks.filter(i => i.isDone).length === 0;
-                const isAllActive = isTabActive && arrTasks.filter(i => i.isDone === false).length === 0;
+                const isAllDone = isTabDone && arrTasks.filter(task => task.isDone).length === 0;
+                const isAllActive = isTabActive && arrTasks.filter(task => task.isDone === false).length === 0;
 
                 if (isAllDone) {
                     todoScreenDone.classList.remove('todo-list-welcome-hide');
                 } else if (isAllActive) {
                     todoScreenActive.classList.remove('todo-list-welcome-hide');
-                }
-            }
+                };
+            };
         });
     };
     checkCurrentTasks();
     checkStatusAll(arrTasks);
-}
+};
 initTable();
 lastTasks()
