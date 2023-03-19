@@ -97,27 +97,28 @@ function checkCurrentTasks() {
         footer.classList.add("footer-hide");
     };
 
-    if (isTabDone && !doneTasksEmpty) {
-        todoScreenDone.classList.add('todo-list-welcome-hide');
-    };
-    if (isTabDone && doneTasksEmpty && !isTasksEmpty) {
-        todoScreenDone.classList.remove('todo-list-welcome-hide');
-    };
+    if (isTabDone) {
+        if (!doneTasksEmpty) {
+            todoScreenDone.classList.add('todo-list-welcome-hide');
+        } else if (!isTasksEmpty) {
+            todoScreenDone.classList.remove('todo-list-welcome-hide');
+        }
+    }
 
-    if (isTabActive && !activeTasksEmpty) {
-        todoScreenActive.classList.add('todo-list-welcome-hide');
-    };
-    if (isTabActive && activeTasksEmpty && !isTasksEmpty) {
-        todoScreenActive.classList.remove('todo-list-welcome-hide');
-    };
-    if (isTabActive && activeTasksEmpty && isTasksEmpty) {
-        todoScreenActive.classList.add('todo-list-welcome-hide');
-    };
+    if (isTabActive) {
+        if (!activeTasksEmpty) {
+            todoScreenActive.classList.add('todo-list-welcome-hide');
+        } else if (!isTasksEmpty) {
+            todoScreenActive.classList.remove('todo-list-welcome-hide');
+        } else {
+            todoScreenActive.classList.add('todo-list-welcome-hide');
+        }
+    }
 };
 
 function renderTask(task, isView = false) {
     const spanClass = task.isDone ? 'todo-title todo-title-done' : 'todo-title';
-    const checkboxStatus = task.isDone ? true : false;
+    const checkboxStatus = task.isDone;
     const taskHtml = `<li id="${task.id}" class="todo-task">
             <label class="completed">
               <input type="checkbox" class="checkbox__list" checked="${checkboxStatus}"/>
@@ -213,27 +214,27 @@ function markAllTasks() {
         changeTaskStatus(true);
     };
 
-    if (isTabDone && isChecked) {
-        changeTaskStatus();
-        todoScreenDone.classList.remove('todo-list-welcome-hide');
-        todoList.innerHTML = '';
-    };
+    if (isTabDone) {
+        if (isChecked) {
+            changeTaskStatus();
+            todoScreenDone.classList.remove('todo-list-welcome-hide');
+            todoList.innerHTML = '';
+        } else {
+            changeTaskStatus();
+            showTab('tabDone');
+        }
+    }
 
-    if (isTabActive && isChecked) {
-        changeTaskStatus();
-        showTab('tabActive');
-    };
-
-    if (isTabDone && !isChecked) {
-        changeTaskStatus();
-        showTab('tabDone');
-    };
-
-    if (isTabActive && !isChecked && arrTasks.length !== 0) {
-        changeTaskStatus();
-        todoScreenActive.classList.remove('todo-list-welcome-hide');
-        todoList.innerHTML = '';
-    };
+    if (isTabActive) {
+        if (isChecked) {
+            changeTaskStatus();
+            showTab('tabActive');
+        } else if (arrTasks.length !== 0) {
+            changeTaskStatus();
+            todoScreenActive.classList.remove('todo-list-welcome-hide');
+            todoList.innerHTML = '';
+        }
+    }
     lastTasks();
     saveLocalstorage();
 };
