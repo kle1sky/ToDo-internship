@@ -117,14 +117,12 @@ function checkCurrentTasks() {
 };
 
 function renderTask(task, isView = false) {
-    const spanClass = task.isDone ? 'todo-title todo-title-done' : 'todo-title';
-    const checkboxStatus = task.isDone;
     const taskHtml = `<li id="${task.id}" class="todo-task">
             <label class="completed">
-              <input type="checkbox" class="checkbox__list" checked="${checkboxStatus}"/>
+              <input type="checkbox" class="checkbox__list" checked="${task.isDone}"/>
               <div class="custom-checkbox"></div>
             </label>
-            <span class="${spanClass}">${task.text}</span>
+            <span class="${task.isDone ? 'todo-title todo-title-done' : 'todo-title'}">${task.text}</span>
             <button class="delete">
               <img src="/img/trash_bin.png" alt="#" />
             </button>
@@ -164,28 +162,23 @@ todoList.addEventListener('click', markTask);
 
 function markTask(event) {
     if (event.target.classList.contains("completed")) {
-        const task = event.target.closest('.todo-task');
-        const todoTitle = task.querySelector(".todo-title");
+        const currentTask = event.target.closest('.todo-task');
+        const todoTitle = currentTask.querySelector(".todo-title");
         todoTitle.classList.toggle("todo-title-done");
-        const titleId = +task.id;
         const index = arrTasks.findIndex((task) => {
-            return task.id === titleId;
+            return task.id === +currentTask.id;
         });
         if (tabDone.classList.contains("footer__tabs-active")) {
-            task.classList.add("todo-task-hide");
+            currentTask.classList.add("todo-task-hide");
         };
         if (tabActive.classList.contains("footer__tabs-active")) {
-            task.classList.add("todo-task-hide");
+            currentTask.classList.add("todo-task-hide");
         };
         arrTasks[index] = {
             ...arrTasks[index],
             isDone: arrTasks[index].isDone ? false : true
         };
-        if (arrTasks[index].isDone) {
-            task.querySelector('input').setAttribute('checked', true);
-        } else {
-            task.querySelector('input').setAttribute('checked', false);
-        };
+        currentTask.querySelector('input').setAttribute('checked', arrTasks[index].isDone);
         viewCurrentTab(true);
     };
 };
@@ -248,7 +241,7 @@ function changeTaskStatus(forAll = false) {
                 task.isDone = false;
                 checkboxForAll.setAttribute('checked', false);
                 if (forAll) {
-                    todoTasks[i].querySelector("input").setAttribute('checked', false);
+                    todoTasks[i].querySelector("input").setAttribute('checked', todoTasks[i].isDone);
                     todoTasks[i].querySelector("span").classList.remove("todo-title-done");
                 };
             };
@@ -325,13 +318,13 @@ function changeTask(event) {
     if (!event.target.classList.contains("todo-title")) {
         return;
     }
+    const selectedTask = event.target.parentNode
     const button = event.target.parentNode.querySelector('button');
     const spanClass = event.target.classList.value;
-    const liElem = event.target.parentNode;
     const spanTodo = event.target.closest('.todo-title');
     const inputChange = document.createElement('input');
     const index = arrTasks.findIndex((task) => {
-        return task.id === event.target.parentNode.id;
+        return task.id === +selectedTask.id;
     });
     button.classList.add('delete-hide');
 
@@ -354,7 +347,7 @@ function changeTask(event) {
         saveLocalstorage();
         if (inputChange.value === "") {
             arrTasks.splice(index, 1);
-            liElem.remove();
+            selectedTask.remove();
             viewCurrentTab();
         };
     };
@@ -362,12 +355,13 @@ function changeTask(event) {
     inputChange.addEventListener('keydown', (e) => {
         if (e.keyCode !== 13) {
             return;
-        };
-        saveChanges();
+        } else {
+            saveChanges();
+        }
     });
 
     document.addEventListener('click', (el) => {
-        if (el.target !== inputChange && liElem.contains(inputChange)) {
+        if (el.target !== inputChange && selectedTask.contains(inputChange)) {
             saveChanges();
         };
     });
