@@ -176,7 +176,7 @@ function markTask(event) {
         };
         arrTasks[index] = {
             ...arrTasks[index],
-            isDone: arrTasks[index].isDone ? false : true
+            isDone: !arrTasks[index].isDone
         };
         currentTask.querySelector('input').setAttribute('checked', arrTasks[index].isDone);
         viewCurrentTab(true);
