@@ -81,7 +81,7 @@ todoInput.addEventListener('keydown', (e) => {
 });
 
 function checkCurrentTasks() {
-    const arrayActive = arrTasks.filter((el) => el.isDone === false);
+    const arrayActive = arrTasks.filter((el) => !el.isDone);
     const arrayDone = arrTasks.filter((el) => el.isDone);
     const isTabDone = tabDone.classList.contains("footer__tabs-active");
     const isTabActive = tabActive.classList.contains("footer__tabs-active");
@@ -154,7 +154,7 @@ function deleteTask(event) {
 };
 
 function lastTasks() {
-    const taskLast = arrTasks.filter((item) => item.isDone === false);
+    const taskLast = arrTasks.filter((item) => !item.isDone);
     counter.textContent = taskLast.length;
 };
 
@@ -198,7 +198,7 @@ function checkStatusAll(array) {
 checkboxForAll.addEventListener('change', markAllTasks);
 
 function markAllTasks() {
-    const isChecked = checkboxForAll.getAttribute("checked") === "true";
+    const isChecked = checkboxForAll.checked;
     const isTabDone = tabDone.classList.contains("footer__tabs-active");
     const isTabActive = tabActive.classList.contains("footer__tabs-active");
     const isTabEvery = tabEvery.classList.contains("footer__tabs-active")
@@ -222,22 +222,25 @@ function markAllTasks() {
         if (isChecked) {
             changeTaskStatus();
             showTab('tabActive');
+            console.log(isChecked);
         } else if (arrTasks.length !== 0) {
             changeTaskStatus();
             todoScreenActive.classList.remove('todo-list-welcome-hide');
             todoList.innerHTML = '';
+            console.log(isChecked);
         }
-    }
+    };
     lastTasks();
     saveLocalstorage();
 };
 
 function changeTaskStatus(forAll = false) {
     const todoTasks = document.querySelectorAll(".todo-task");
-    const isChecked = checkboxForAll.getAttribute("checked") === "true";
+    const isChecked = checkboxForAll.checked;
     arrTasks.forEach((task, i) => {
         if (isChecked) {
             if (task.isDone) {
+                console.log("");
                 task.isDone = false;
                 checkboxForAll.setAttribute('checked', false);
                 if (forAll) {
@@ -259,7 +262,7 @@ function changeTaskStatus(forAll = false) {
 clearAllBtn.addEventListener('click', clearDone);
 
 function clearDone() {
-    const arrayNew = arrTasks.filter((el) => el.isDone === false);
+    const arrayNew = arrTasks.filter((el) => !el.isDone);
     arrTasks = arrayNew;
     todoList.innerHTML = '';
     arrTasks.forEach((task) => {
@@ -302,7 +305,7 @@ function showTab(tabName) {
     if (tabName === 'tabDone') {
         arrayTasks = arrTasks.filter((el) => el.isDone);
     } else if (tabName === 'tabActive') {
-        arrayTasks = arrTasks.filter((el) => el.isDone === false);
+        arrayTasks = arrTasks.filter((el) => !el.isDone);
     } else {
         arrayTasks = arrTasks;
     };
@@ -397,7 +400,7 @@ function initTable() {
                 renderTask(task, true);
 
                 const isAllDone = isTabDone && arrTasks.filter(task => task.isDone).length === 0;
-                const isAllActive = isTabActive && arrTasks.filter(task => task.isDone === false).length === 0;
+                const isAllActive = isTabActive && arrTasks.filter(task => !task.isDone).length === 0;
 
                 if (isAllDone) {
                     todoScreenDone.classList.remove('todo-list-welcome-hide');
