@@ -388,23 +388,14 @@ function initTable() {
 
     if (localTasks) {
         const activeTab = document.querySelector('.footer__tabs-active');
-        const isTabDone = activeTab === tabDone;
-        const isTabActive = activeTab === tabActive;
 
         localTasks.forEach(task => {
-            const status = task.isDone;
-            const isDone = status === true;
-            const isActive = status === false;
-
-            if ((isTabDone && isDone) || (isTabActive && isActive) || activeTab === tabEvery) {
+            if ((activeTab === tabDone && task.isDone) || (activeTab === tabActive && !task.isDone) || activeTab === tabEvery) {
                 renderTask(task, true);
 
-                const isAllDone = isTabDone && arrTasks.filter(task => task.isDone).length === 0;
-                const isAllActive = isTabActive && arrTasks.filter(task => !task.isDone).length === 0;
-
-                if (isAllDone) {
+                if (activeTab === tabDone && arrTasks.filter(task => task.isDone).length === 0) {
                     todoScreenDone.classList.remove('todo-list-welcome-hide');
-                } else if (isAllActive) {
+                } else if (activeTab === tabActive && arrTasks.filter(task => !task.isDone).length === 0) {
                     todoScreenActive.classList.remove('todo-list-welcome-hide');
                 };
             };
