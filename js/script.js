@@ -222,12 +222,10 @@ function markAllTasks() {
         if (isChecked) {
             changeTaskStatus();
             showTab('tabActive');
-            console.log(isChecked);
         } else if (arrTasks.length !== 0) {
             changeTaskStatus();
             todoScreenActive.classList.remove('todo-list-welcome-hide');
             todoList.innerHTML = '';
-            console.log(isChecked);
         }
     };
     lastTasks();
@@ -240,7 +238,6 @@ function changeTaskStatus(forAll = false) {
     arrTasks.forEach((task, i) => {
         if (isChecked) {
             if (task.isDone) {
-                console.log("");
                 task.isDone = false;
                 checkboxForAll.setAttribute('checked', false);
                 if (forAll) {
@@ -391,13 +388,7 @@ function initTable() {
 
         localTasks.forEach(task => {
             if ((activeTab === tabDone && task.isDone) || (activeTab === tabActive && !task.isDone) || activeTab === tabEvery) {
-                renderTask(task, true);
-
-                if (activeTab === tabDone && arrTasks.filter(task => task.isDone).length === 0) {
-                    todoScreenDone.classList.remove('todo-list-welcome-hide');
-                } else if (activeTab === tabActive && arrTasks.filter(task => !task.isDone).length === 0) {
-                    todoScreenActive.classList.remove('todo-list-welcome-hide');
-                };
+                renderTask(task, true)
             };
         });
     };
