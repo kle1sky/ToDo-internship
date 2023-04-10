@@ -11,29 +11,8 @@ const checkboxForAll = document.querySelector("#checkAll");
 const footer = document.querySelector(".footer");
 const counter = document.querySelector(".counter");
 const clearAllBtn = document.querySelector(".footer__clearall");
-const localTasks = JSON.parse(localStorage.getItem('tasks'));
-const localTabs = JSON.parse(localStorage.getItem('tabs'));
-let arrTasks = localTasks ? localTasks : [];
-let arrTabs = localTabs ? localTabs : [{
-    "isOpen": true,
-    "id": "tabEvery"
-}, {
-    "isOpen": false,
-    "id": "tabDone"
-}, {
-    "isOpen": false,
-    "id": "tabActive"
-}];
-
-function changeTabStatus(tab) {
-    arrTabs.forEach((item) => {
-        item.isOpen = false
-        if (tab === item.id) {
-            item.isOpen = true;
-        }
-    })
-    saveLocalstorage()
-};
+const localTab = JSON.parse(localStorage.getItem('tab'));
+let arrTasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
 todoInput.addEventListener('input', (e) => {
     if (e.target.value === " ") {
@@ -83,11 +62,10 @@ todoInput.addEventListener('keydown', (e) => {
 function checkCurrentTasks() {
     const arrayActive = arrTasks.filter((el) => !el.isDone);
     const arrayDone = arrTasks.filter((el) => el.isDone);
-    const isTabDone = tabDone.classList.contains("footer__tabs-active");
-    const isTabActive = tabActive.classList.contains("footer__tabs-active");
     const isTasksEmpty = arrTasks.length === 0;
     const doneTasksEmpty = arrayDone.length === 0;
     const activeTasksEmpty = arrayActive.length === 0;
+    const activeTab = JSON.parse(localStorage.getItem('tab'));
 
     if (!isTasksEmpty) {
         noTaskScreen.classList.add('todo-list-welcome-hide');
@@ -97,22 +75,35 @@ function checkCurrentTasks() {
         footer.classList.add("footer-hide");
     };
 
-    if (isTabDone) {
+    console.log(activeTab);
+
+    if (activeTab === "tabDone") {
         if (!doneTasksEmpty) {
             todoScreenDone.classList.add('todo-list-welcome-hide');
-        } else if (!isTasksEmpty) {
-            todoScreenDone.classList.remove('todo-list-welcome-hide');
+            return;
         }
+        if (!isTasksEmpty) {
+            todoScreenDone.classList.remove('todo-list-welcome-hide');
+            return;
+        }
+        todoScreenDone.classList.add('todo-list-welcome-hide');
     }
 
-    if (isTabActive) {
+    if (activeTab === "tabActive") {
         if (!activeTasksEmpty) {
             todoScreenActive.classList.add('todo-list-welcome-hide');
-        } else if (!isTasksEmpty) {
-            todoScreenActive.classList.remove('todo-list-welcome-hide');
-        } else {
-            todoScreenActive.classList.add('todo-list-welcome-hide');
+            return;
         }
+        if (!isTasksEmpty) {
+            todoScreenActive.classList.remove('todo-list-welcome-hide');
+            return;
+        }
+        todoScreenActive.classList.add('todo-list-welcome-hide');
+
+    }
+
+    if (arrTasks.length > 0) {
+        noTaskScreen.classList.add('todo-list-welcome-hide');
     }
 };
 
@@ -198,16 +189,14 @@ function checkStatusAll(array) {
 checkboxForAll.addEventListener('change', markAllTasks);
 
 function markAllTasks() {
-    const isChecked = checkboxForAll.checked;
-    const isTabDone = tabDone.classList.contains("footer__tabs-active");
-    const isTabActive = tabActive.classList.contains("footer__tabs-active");
-    const isTabEvery = tabEvery.classList.contains("footer__tabs-active")
+    const isChecked = checkboxForAll.getAttribute('checked') === 'true';
+    const activeTab = JSON.parse(localStorage.getItem('tab'));
 
-    if (isTabEvery) {
+    if (activeTab === "tabEvery") {
         changeTaskStatus(true);
     };
 
-    if (isTabDone) {
+    if (activeTab === "tabDone") {
         if (isChecked) {
             changeTaskStatus();
             todoScreenDone.classList.remove('todo-list-welcome-hide');
@@ -218,7 +207,7 @@ function markAllTasks() {
         }
     }
 
-    if (isTabActive) {
+    if (activeTab === "tabActive") {
         if (isChecked) {
             changeTaskStatus();
             showTab('tabActive');
@@ -234,7 +223,7 @@ function markAllTasks() {
 
 function changeTaskStatus(forAll = false) {
     const todoTasks = document.querySelectorAll(".todo-task");
-    const isChecked = checkboxForAll.checked;
+    const isChecked = checkboxForAll.getAttribute("checked") === "true";
     arrTasks.forEach((task, i) => {
         if (isChecked) {
             if (task.isDone) {
@@ -246,7 +235,7 @@ function changeTaskStatus(forAll = false) {
                 };
             };
         } else {
-            task.isDone = true
+            task.isDone = true;
             checkboxForAll.setAttribute('checked', true);
             if (forAll) {
                 todoTasks[i].querySelector("input").setAttribute('checked', true);
@@ -280,6 +269,7 @@ tabsAll.forEach((tab) => {
             item.classList.remove("footer__tabs-active");
         });
         tab.classList.add("footer__tabs-active");
+        saveLocalstorage();
     });
 });
 
@@ -294,7 +284,6 @@ tabEvery.addEventListener('click', () => {
 });
 
 function showTab(tabName) {
-    changeTabStatus(tabName);
     todoScreenActive.classList.add('todo-list-welcome-hide');
     todoScreenDone.classList.add('todo-list-welcome-hide');
     todoList.innerHTML = '';
@@ -310,6 +299,7 @@ function showTab(tabName) {
     arrayTasks.forEach((item) => {
         renderTask(item, true);
     });
+    saveLocalstorage();
 };
 
 todoList.addEventListener('dblclick', changeTask);
@@ -369,24 +359,22 @@ function changeTask(event) {
 
 function saveLocalstorage() {
     localStorage.setItem("tasks", JSON.stringify(arrTasks));
-    localStorage.setItem("tabs", JSON.stringify(arrTabs));
-}
+    const activeTab = document.querySelector(".footer__tabs-active").id;
+    localStorage.setItem("tab", JSON.stringify(activeTab));
+};
 
 function initTable() {
-    if (localTabs) {
-        localTabs.forEach(tab => {
-            if (tab.isOpen) {
-                document.querySelector(`#${tab.id}`).classList.add('footer__tabs-active');
-            }
-        });
+    const activeTab = document.querySelector(`.footer__tab[id="${localTab}"]`);
+    if (localTab) {
+        activeTab.classList.add('footer__tabs-active');
     } else {
         document.querySelectorAll('.footer__tab')[0].classList.add('footer__tabs-active');
     }
 
-    if (localTasks) {
+    if (arrTasks) {
         const activeTab = document.querySelector('.footer__tabs-active');
 
-        localTasks.forEach(task => {
+        arrTasks.forEach(task => {
             if ((activeTab === tabDone && task.isDone) || (activeTab === tabActive && !task.isDone) || activeTab === tabEvery) {
                 renderTask(task, true)
             };
