@@ -18,37 +18,38 @@
   <body>
     <h1>to-do</h1>
     <div class="todo">
-      <label class="todo__checkbox"
-        ><input
-          type="checkbox"
-          name="check-for-all"
-          id="checkAll"
-          checked="false"
-        />
+      <label class="todo__checkbox">
+        <input type="checkbox" id="checkAll" />
         <div class="custom"></div>
       </label>
       <input type="text" class="todo__input" placeholder="Что нужно сделать?" />
     </div>
     <div class="todo-content">
-      <li class="todo-list-welcome">&#128559; Список дел пуст</li>
-      <li class="todo-list-marked todo-list-welcome-hide">
-        <div class="smile">&#128559;</div>
-        Список выполненных дел пуст
-      </li>
-      <li class="todo-list-active todo-list-welcome-hide">
-        &#128526; Все задачи выполнены
-      </li>
-      <ul class="todo-list"></ul>
+      <!-- <div class="todo-list-welcome">&#128559; Список дел пуст</div>
+      <div class="todo-list-marked">&#128559; Список выполненных дел пуст</div>
+      <div class="todo-list-active">&#128526; Все задачи выполнены</div> -->
+      <ul class="todo-list">
+        <li class="todo-task">
+          <label class="completed">
+            <input type="checkbox" />
+            <div class="custom-checkbox"></div>
+          </label>
+          <input class="todo-title" type="text" value="4654646" readonly />
+          <button class="delete">
+            <img src="/img/trash_bin.png" alt="#" />
+          </button>
+        </li>
+      </ul>
     </div>
-    <footer class="footer footer-hide">
+    <footer class="footer">
       <div class="footer__counter">
         <div class="counter"></div>
-        <div class="footer__left">left</div>
+        <div class="footer__left"></div>
       </div>
       <div class="footer__tabs">
-        <div id="tabEvery" class="footer__tab">All</div>
-        <div id="tabDone" class="footer__tab">Done</div>
-        <div id="tabActive" class="footer__tab">Active</div>
+        <div id="tabEvery" data-type="all" class="footer__tab">All</div>
+        <div id="tabDone" data-type="done" class="footer__tab">Done</div>
+        <div id="tabActive" data-type="active" class="footer__tab">Active</div>
       </div>
       <div class="footer__clearall">clear done</div>
     </footer>

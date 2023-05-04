@@ -1,387 +1,236 @@
-const tabDone = document.querySelector('#tabDone');
-const tabActive = document.querySelector('#tabActive');
-const tabEvery = document.querySelector('#tabEvery');
-const checkbox = document.querySelectorAll(".checkbox__list");
-const todoInput = document.querySelector(".todo__input");
-const todoList = document.querySelector(".todo-list");
-const noTaskScreen = document.querySelector(".todo-list-welcome");
-const todoScreenDone = document.querySelector('.todo-list-marked');
-const todoScreenActive = document.querySelector('.todo-list-active');
-const checkboxForAll = document.querySelector("#checkAll");
-const footer = document.querySelector(".footer");
-const counter = document.querySelector(".counter");
-const clearAllBtn = document.querySelector(".footer__clearall");
-const localTab = JSON.parse(localStorage.getItem('tab'));
-let arrTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+let arrTasks = localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [];
+let type = localStorage.getItem('type') ? localStorage.getItem('type') : 'all';
 
-todoInput.addEventListener('input', (e) => {
-    if (e.target.value === " ") {
-        e.target.value = "";
+const noTaskScreens = [{
+        type: 'all',
+        smile: '&#128559;',
+        message: 'Список дел пуст',
+    }, {
+        type: 'done',
+        smile: '&#128559;',
+        message: 'Список выполненных дел пуст',
+    },
+    {
+        type: 'active',
+        smile: '&#128526;',
+        message: 'Все задачи выполнены',
     }
+];
+
+const footer = document.querySelector('.footer');
+const todoList = document.querySelector('.todo-list');
+const tabs = document.querySelectorAll('.footer__tab');
+const inputForTasks = document.querySelector(".todo__input");
+const inputCheckAll = document.querySelector("#checkAll");
+const buttonClearDone = document.querySelector(".footer__clearall");
+const counter = document.querySelector(".footer__left");
+let viewTasks = [];
+
+const noTaskScreenTemplate = (smile, message) => {
+    const el = document.createElement('div');
+    el.classList.add('todo-list-welcome');
+    el.innerHTML = `${smile} ${message}`;
+
+    return el;
+};
+
+const showNoTaskScreen = (type) => {
+    resetList();
+    noTaskScreens.forEach((screen) => {
+        if (screen.type === type) {
+            todoList.appendChild(noTaskScreenTemplate(screen.smile, screen.message));
+        }
+    });
+};
+
+const onFilterTasks = (e) => {
+    const target = e.target;
+    type = target.dataset.type;
+
+    tabs.forEach((tab) => {
+        tab.classList.remove('footer__tabs-active');
+    });
+
+    target.classList.add('footer__tabs-active');
+
+    renderTasks(arrTasks);
+};
+
+tabs.forEach((tab) => {
+    tab.addEventListener('click', onFilterTasks);
 });
 
-function viewCurrentTab(withCheckStatus = false) {
-    checkCurrentTasks();
-    lastTasks();
-    saveLocalstorage();
-    if (withCheckStatus) {
-        checkStatusAll(arrTasks);
-    }
-};
+const templateTasks = (task) => {
+    const el = document.createElement('li');
+    el.classList.add('todo-task');
+    el.innerHTML = `
+    <label class="completed">
+    <input type="checkbox" />
+    <div class="custom-checkbox"></div>
+  </label>
+  <input class="todo-title ${task.isDone ? 'todo-title-done' : ''}" type="text" value="${task.title}" readonly />
+  <button class="delete">
+    <img src="/img/trash_bin.png" alt="#" />
+  </button>`;
+    const checkbox = el.querySelector('input[type="checkbox"]');
+    const input = el.querySelector('.todo-title');
+    const deleteButton = el.querySelector('.delete');
+    const index = arrTasks.indexOf(task);
 
-function pushTask() {
-    const newTask = {
-        id: Date.now(),
-        text: todoInput.value,
-        isDone: false,
-    };
-    todoInput.value = '';
-    todoInput.focus();
-    if (!tabDone.classList.contains("footer__tabs-active")) {
-        renderTask(newTask);
-    } else {
-        arrTasks.push(newTask);
-    }
-    viewCurrentTab(true);
-};
-
-/* отправка таска в массив по клику вне инпута */
-document.addEventListener('click', (el) => {
-    if (el.target != todoInput && todoInput.value) {
-        pushTask();
-    }
-});
-
-/* Отправление таска в массив по enter */
-todoInput.addEventListener('keydown', (e) => {
-    if (e.keyCode === 13 && e.target.value) {
-        pushTask();
-    };
-});
-
-function checkCurrentTasks() {
-    const arrayActive = arrTasks.filter((el) => !el.isDone);
-    const arrayDone = arrTasks.filter((el) => el.isDone);
-    const isTasksEmpty = arrTasks.length === 0;
-    const doneTasksEmpty = arrayDone.length === 0;
-    const activeTasksEmpty = arrayActive.length === 0;
-    const activeTab = JSON.parse(localStorage.getItem('tab'));
-
-    if (!isTasksEmpty) {
-        noTaskScreen.classList.add('todo-list-welcome-hide');
-        footer.classList.remove("footer-hide");
-    } else {
-        noTaskScreen.classList.remove('todo-list-welcome-hide');
-        footer.classList.add("footer-hide");
+    if (task.isDone) {
+        checkbox.checked = true;
     };
 
-    console.log(activeTab);
+    checkbox.addEventListener('change', () => {
+        task.isDone = checkbox.checked;
+        input.classList.toggle('todo-title-done');
+        renderTasks(arrTasks);
+    });
 
-    if (activeTab === "tabDone") {
-        if (!doneTasksEmpty) {
-            todoScreenDone.classList.add('todo-list-welcome-hide');
-            return;
-        }
-        if (!isTasksEmpty) {
-            todoScreenDone.classList.remove('todo-list-welcome-hide');
-            return;
-        }
-        todoScreenDone.classList.add('todo-list-welcome-hide');
-    }
+    input.addEventListener('dblclick', () => {
+        input.readOnly = false;
+        input.classList.add('input-change');
+        input.classList.remove('todo-title-done');
+    });
 
-    if (activeTab === "tabActive") {
-        if (!activeTasksEmpty) {
-            todoScreenActive.classList.add('todo-list-welcome-hide');
-            return;
-        }
-        if (!isTasksEmpty) {
-            todoScreenActive.classList.remove('todo-list-welcome-hide');
-            return;
-        }
-        todoScreenActive.classList.add('todo-list-welcome-hide');
+    input.addEventListener('focusout', () => {
+        saveChangedTask();
+    });
 
-    }
-
-    if (arrTasks.length > 0) {
-        noTaskScreen.classList.add('todo-list-welcome-hide');
-    }
-};
-
-function renderTask(task, isView = false) {
-    const taskHtml = `<li id="${task.id}" class="todo-task">
-            <label class="completed">
-              <input type="checkbox" class="checkbox__list" checked="${task.isDone}"/>
-              <div class="custom-checkbox"></div>
-            </label>
-            <span class="${task.isDone ? 'todo-title todo-title-done' : 'todo-title'}">${task.text}</span>
-            <button class="delete">
-              <img src="/img/trash_bin.png" alt="#" />
-            </button>
-          </li>`;
-    if (!isView) {
-        arrTasks.push(task);
-    };
-    todoList.insertAdjacentHTML('beforeend', taskHtml);
-};
-
-todoList.addEventListener('click', deleteTask);
-
-function deleteTask(event) {
-    if (event.target.classList.contains("delete")) {
-        const task = event.target.closest('.todo-task');
-        task.remove();
-
-        const listId = +task.id;
-        const index = arrTasks.findIndex((task) => {
-            return task.id === listId;
-        });
-
-        arrTasks.splice(index, 1);
-        if (tabDone.classList.contains("footer__tabs-active") && arrTasks.length === 0) {
-            checkboxForAll.setAttribute('checked', false);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            saveChangedTask();
+            input.blur();
         };
-        viewCurrentTab(true);
-    };
-};
+    });
 
-function lastTasks() {
-    const taskLast = arrTasks.filter((item) => !item.isDone);
-    counter.textContent = taskLast.length;
-};
-
-todoList.addEventListener('click', markTask);
-
-function markTask(event) {
-    if (event.target.classList.contains("completed")) {
-        const currentTask = event.target.closest('.todo-task');
-        const todoTitle = currentTask.querySelector(".todo-title");
-        todoTitle.classList.toggle("todo-title-done");
-        const index = arrTasks.findIndex((task) => {
-            return task.id === +currentTask.id;
-        });
-        if (tabDone.classList.contains("footer__tabs-active")) {
-            currentTask.classList.add("todo-task-hide");
-        };
-        if (tabActive.classList.contains("footer__tabs-active")) {
-            currentTask.classList.add("todo-task-hide");
+    const saveChangedTask = () => {
+        input.readOnly = true;
+        input.classList.remove('input-change');
+        if (task.isDone) {
+            input.classList.add('todo-title-done');
         };
         arrTasks[index] = {
-            ...arrTasks[index],
-            isDone: !arrTasks[index].isDone
+            title: input.value,
+            isDone: task.isDone,
         };
-        currentTask.querySelector('input').setAttribute('checked', arrTasks[index].isDone);
-        viewCurrentTab(true);
     };
+
+    deleteButton.addEventListener('click', () => {
+        arrTasks.splice(index, 1);
+        renderTasks(arrTasks);
+    });
+
+    return el;
 };
 
-function checkStatusAll(array) {
-    const arrDone = array.filter((item) => item.isDone);
-    if (array.length === arrDone.length) {
-        checkboxForAll.setAttribute('checked', true);
-    } else {
-        checkboxForAll.setAttribute('checked', false);
+const resetList = () => {
+    todoList.innerHTML = '';
+}
+
+const renderTasks = (tasks) => {
+    resetList();
+    switch (type) {
+        case 'done':
+            viewTasks = tasks.filter((task) => task.isDone);
+            break;
+        case 'active':
+            viewTasks = tasks.filter((task) => !task.isDone);
+            break;
+        default:
+            viewTasks = tasks;
+            break;
     };
+
+    const tasksDone = arrTasks.filter((task) => task.isDone);
+
+    counter.innerHTML = `${arrTasks.length - tasksDone.length} left`;
+
+    tasksDone.length === arrTasks.length ? inputCheckAll.checked = true : inputCheckAll.checked = false;
+
     if (arrTasks.length === 0) {
-        checkboxForAll.setAttribute('checked', false);
-    };
-};
-
-checkboxForAll.addEventListener('change', markAllTasks);
-
-function markAllTasks() {
-    const isChecked = checkboxForAll.getAttribute('checked') === 'true';
-    const activeTab = JSON.parse(localStorage.getItem('tab'));
-
-    if (activeTab === "tabEvery") {
-        changeTaskStatus(true);
-    };
-
-    if (activeTab === "tabDone") {
-        if (isChecked) {
-            changeTaskStatus();
-            todoScreenDone.classList.remove('todo-list-welcome-hide');
-            todoList.innerHTML = '';
-        } else {
-            changeTaskStatus();
-            showTab('tabDone');
-        }
+        inputCheckAll.disabled = true;
+        footer.classList.add('footer-hide');
+        showNoTaskScreen("all");
+        saveLocalStorage();
+        return;
+    } else {
+        inputCheckAll.disabled = false;
+        footer.classList.remove('footer-hide');
     }
 
-    if (activeTab === "tabActive") {
-        if (isChecked) {
-            changeTaskStatus();
-            showTab('tabActive');
-        } else if (arrTasks.length !== 0) {
-            changeTaskStatus();
-            todoScreenActive.classList.remove('todo-list-welcome-hide');
-            todoList.innerHTML = '';
-        }
+    if (viewTasks.length === 0) {
+        showNoTaskScreen(type);
+        saveLocalStorage();
+        return;
     };
-    lastTasks();
-    saveLocalstorage();
+
+    viewTasks.forEach((task) => {
+        todoList.append(templateTasks(task));
+    });
+    saveLocalStorage();
 };
 
-function changeTaskStatus(forAll = false) {
-    const todoTasks = document.querySelectorAll(".todo-task");
-    const isChecked = checkboxForAll.getAttribute("checked") === "true";
-    arrTasks.forEach((task, i) => {
-        if (isChecked) {
-            if (task.isDone) {
-                task.isDone = false;
-                checkboxForAll.setAttribute('checked', false);
-                if (forAll) {
-                    todoTasks[i].querySelector("input").setAttribute('checked', todoTasks[i].isDone);
-                    todoTasks[i].querySelector("span").classList.remove("todo-title-done");
-                };
-            };
-        } else {
-            task.isDone = true;
-            checkboxForAll.setAttribute('checked', true);
-            if (forAll) {
-                todoTasks[i].querySelector("input").setAttribute('checked', true);
-                todoTasks[i].querySelector("span").classList.add("todo-title-done");
-            };
-        };
-    });
-};
-
-clearAllBtn.addEventListener('click', clearDone);
-
-function clearDone() {
-    const arrayNew = arrTasks.filter((el) => !el.isDone);
-    arrTasks = arrayNew;
-    todoList.innerHTML = '';
-    arrTasks.forEach((task) => {
-        renderTask(task, true);
-    });
-    checkboxForAll.setAttribute('checked', false);
-    if (tabDone.classList.contains("footer__tabs-active") && arrTasks.length !== 0) {
-        todoList.innerHTML = '';
+inputForTasks.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || !inputForTasks.value) {
+        return;
     };
-    viewCurrentTab();
-};
-
-const tabsAll = document.querySelectorAll('.footer__tab');
-tabsAll.forEach((tab) => {
-    tab.addEventListener('click', (e) => {
-        e.preventDefault;
-        tabsAll.forEach((item) => {
-            item.classList.remove("footer__tabs-active");
-        });
-        tab.classList.add("footer__tabs-active");
-        saveLocalstorage();
-    });
+    createTask();
 });
 
-tabDone.addEventListener('click', () => {
-    showTab('tabDone');
-});
-tabActive.addEventListener('click', () => {
-    showTab('tabActive');
-});
-tabEvery.addEventListener('click', () => {
-    showTab('tabEvery');
-});
-
-function showTab(tabName) {
-    todoScreenActive.classList.add('todo-list-welcome-hide');
-    todoScreenDone.classList.add('todo-list-welcome-hide');
-    todoList.innerHTML = '';
-    let arrayTasks;
-    if (tabName === 'tabDone') {
-        arrayTasks = arrTasks.filter((el) => el.isDone);
-    } else if (tabName === 'tabActive') {
-        arrayTasks = arrTasks.filter((el) => !el.isDone);
-    } else {
-        arrayTasks = arrTasks;
-    };
-    checkCurrentTasks();
-    arrayTasks.forEach((item) => {
-        renderTask(item, true);
-    });
-    saveLocalstorage();
-};
-
-todoList.addEventListener('dblclick', changeTask);
-
-function changeTask(event) {
-    if (!event.target.classList.contains("todo-title")) {
+inputForTasks.addEventListener('focusout', () => {
+    if (!inputForTasks.value) {
         return;
     }
-    const selectedTask = event.target.parentNode
-    const button = event.target.parentNode.querySelector('button');
-    const spanClass = event.target.classList.value;
-    const spanTodo = event.target.closest('.todo-title');
-    const inputChange = document.createElement('input');
-    const index = arrTasks.findIndex((task) => {
-        return task.id === +selectedTask.id;
-    });
-    button.classList.add('delete-hide');
+    createTask();
+});
 
-    inputChange.setAttribute('type', "text");
-    inputChange.classList.add('input-change');
-    inputChange.value = spanTodo.textContent;
-
-    spanTodo.parentNode.replaceChild(inputChange, spanTodo);
-    inputChange.focus();
-
-    function saveChanges() {
-        arrTasks[index] = {
-            ...arrTasks[index],
-            text: inputChange.value
-        }
-        inputChange.remove();
-        const newSpan = `<span class="${spanClass}">${arrTasks[index].text}</span>`;
-        button.insertAdjacentHTML('beforeBegin', newSpan)
-        button.classList.remove('delete-hide');
-        saveLocalstorage();
-        if (inputChange.value === "") {
-            arrTasks.splice(index, 1);
-            selectedTask.remove();
-            viewCurrentTab();
-        };
-    };
-
-    inputChange.addEventListener('keydown', (e) => {
-        if (e.keyCode !== 13) {
-            return;
-        } else {
-            saveChanges();
-        }
-    });
-
-    document.addEventListener('click', (el) => {
-        if (el.target !== inputChange && selectedTask.contains(inputChange)) {
-            saveChanges();
-        };
-    });
-};
-
-function saveLocalstorage() {
-    localStorage.setItem("tasks", JSON.stringify(arrTasks));
-    const activeTab = document.querySelector(".footer__tabs-active").id;
-    localStorage.setItem("tab", JSON.stringify(activeTab));
-};
-
-function initTable() {
-    const activeTab = document.querySelector(`.footer__tab[id="${localTab}"]`);
-    if (localTab) {
-        activeTab.classList.add('footer__tabs-active');
-    } else {
-        document.querySelectorAll('.footer__tab')[0].classList.add('footer__tabs-active');
+inputForTasks.addEventListener('input', (e) => {
+    let value = e.target.value;
+    if (value === ' ') {
+        e.target.value = '';
     }
+})
 
-    if (arrTasks) {
-        const activeTab = document.querySelector('.footer__tabs-active');
-
-        arrTasks.forEach(task => {
-            if ((activeTab === tabDone && task.isDone) || (activeTab === tabActive && !task.isDone) || activeTab === tabEvery) {
-                renderTask(task, true)
-            };
-        });
+const createTask = () => {
+    const task = {
+        title: inputForTasks.value,
+        isDone: false,
     };
-    checkCurrentTasks();
-    checkStatusAll(arrTasks);
+    arrTasks.push(task);
+    inputForTasks.value = '';
+    inputForTasks.focus();
+    renderTasks(arrTasks);
+}
+
+const clearDoneTasks = () => {
+    arrTasks = arrTasks.filter((task) => !task.isDone);
+    renderTasks(arrTasks);
 };
-initTable();
-lastTasks()
+
+buttonClearDone.addEventListener('click', clearDoneTasks);
+
+const markAllTasks = () => {
+    arrTasks.forEach((task) => {
+        inputCheckAll.checked ? task.isDone = true : task.isDone = false;
+    });
+    renderTasks(arrTasks);
+};
+
+inputCheckAll.addEventListener('change', markAllTasks);
+
+const saveLocalStorage = () => {
+    localStorage.setItem('tasks', JSON.stringify(arrTasks));
+    localStorage.setItem('type', type);
+}
+
+const init = () => {
+    tabs.forEach((tab) => {
+        if (type === tab.dataset.type) {
+            tab.classList.add('footer__tabs-active');
+        };
+    });
+    renderTasks(arrTasks);
+};
+
+init();

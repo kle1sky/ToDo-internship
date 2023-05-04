@@ -44,8 +44,12 @@ h1 {
       opacity: 0.3;
     }
 
-    input[checked="true"] + .custom::before {
+    input:checked + .custom::before {
       opacity: 1;
+    }
+
+    input:disabled + .custom::before {
+      opacity: 0.3;
     }
   }
 
@@ -116,6 +120,7 @@ h1 {
       height: 100px;
       justify-content: center;
       align-items: center;
+      text-align: center;
       font-size: 36px;
       color: #4d4d4d;
       border-radius: 10px;
@@ -142,16 +147,28 @@ h1 {
     border: 1px solid rgba(0, 0, 0, 0.1);
     background-color: #fff;
 
-    &-hide {
-      display: none;
-    }
-
     .todo-title {
       margin-left: 18px;
       transition: all 0.3s ease;
       user-select: none;
       word-break: break-all;
       line-height: 1.7;
+      outline: none;
+      font-family: Roboto;
+      font-size: 18px;
+      color: #4d4d4d;
+      border: none;
+      cursor: default;
+
+      &.input-change {
+        background-color: #f6f6f6;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        width: 480px;
+        height: 40px;
+        box-shadow: 1px 1px 1px rgb(0 0 0 / 15%);
+        cursor: text;
+      }
 
       &-done {
         text-decoration: line-through;
@@ -171,26 +188,23 @@ h1 {
       margin-left: 4px;
     }
 
-    .checkbox__list {
-      display: none;
+    .custom-checkbox {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: url("../img/icons8-галочка.svg") center center / cover
+        no-repeat;
+      opacity: 0;
+      transition: all 0.15s ease;
     }
 
-    .custom-checkbox::before {
-      content: url("../img/icons8-галочка.svg");
+    input[type="checkbox"] {
       position: absolute;
-      display: none;
-      transform: translate(-45%, -50%);
-      scale: 0.5;
-      top: 0;
-      left: 0;
-      pointer-events: none;
+      opacity: 0;
     }
 
-    input[checked="true"] + .custom-checkbox::before {
-      content: url("../img/icons8-галочка.svg");
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    input:checked + .custom-checkbox {
+      opacity: 1;
     }
 
     .delete {
@@ -219,20 +233,6 @@ h1 {
       .delete {
         opacity: 1;
       }
-    }
-
-    .input-change {
-      font-family: Roboto;
-      outline: none;
-      margin-left: 16px;
-      font-size: 18px;
-      color: #4d4d4d;
-      background-color: #f6f6f6;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: 10px;
-      width: 480px;
-      height: 40px;
-      box-shadow: 1px 1px 1px rgb(0 0 0 / 15%);
     }
   }
 }

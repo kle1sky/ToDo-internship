@@ -42,8 +42,11 @@ h1 {
   transform: translate(-40%, -120%);
   opacity: 0.3;
 }
-.todo__checkbox input[checked=true] + .custom::before {
+.todo__checkbox input:checked + .custom::before {
   opacity: 1;
+}
+.todo__checkbox input:disabled + .custom::before {
+  opacity: 0.3;
 }
 .todo__input {
   width: 550px;
@@ -108,6 +111,7 @@ h1 {
   height: 100px;
   justify-content: center;
   align-items: center;
+  text-align: center;
   font-size: 36px;
   color: #4d4d4d;
   border-radius: 10px;
@@ -131,15 +135,27 @@ h1 {
   border: 1px solid rgba(0, 0, 0, 0.1);
   background-color: #fff;
 }
-.todo-content .todo-task-hide {
-  display: none;
-}
 .todo-content .todo-task .todo-title {
   margin-left: 18px;
   transition: all 0.3s ease;
   user-select: none;
   word-break: break-all;
   line-height: 1.7;
+  outline: none;
+  font-family: Roboto;
+  font-size: 18px;
+  color: #4d4d4d;
+  border: none;
+  cursor: default;
+}
+.todo-content .todo-task .todo-title.input-change {
+  background-color: #f6f6f6;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  width: 480px;
+  height: 40px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
+  cursor: text;
 }
 .todo-content .todo-task .todo-title-done {
   text-decoration: line-through;
@@ -156,24 +172,20 @@ h1 {
   border-radius: 20px;
   margin-left: 4px;
 }
-.todo-content .todo-task .checkbox__list {
-  display: none;
+.todo-content .todo-task .custom-checkbox {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: url("../img/icons8-галочка.svg") center center/cover no-repeat;
+  opacity: 0;
+  transition: all 0.15s ease;
 }
-.todo-content .todo-task .custom-checkbox::before {
-  content: url("../img/icons8-галочка.svg");
+.todo-content .todo-task input[type=checkbox] {
   position: absolute;
-  display: none;
-  transform: translate(-45%, -50%);
-  scale: 0.5;
-  top: 0;
-  left: 0;
-  pointer-events: none;
+  opacity: 0;
 }
-.todo-content .todo-task input[checked=true] + .custom-checkbox::before {
-  content: url("../img/icons8-галочка.svg");
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.todo-content .todo-task input:checked + .custom-checkbox {
+  opacity: 1;
 }
 .todo-content .todo-task .delete {
   background-color: transparent;
@@ -196,19 +208,6 @@ h1 {
 }
 .todo-content .todo-task:hover .delete {
   opacity: 1;
-}
-.todo-content .todo-task .input-change {
-  font-family: Roboto;
-  outline: none;
-  margin-left: 16px;
-  font-size: 18px;
-  color: #4d4d4d;
-  background-color: #f6f6f6;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  width: 480px;
-  height: 40px;
-  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
 }
 
 .footer {
