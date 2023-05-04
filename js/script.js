@@ -10,7 +10,6 @@ const noTaskScreens = [{
         smile: '&#128559;',
         message: 'Список выполненных дел пуст',
     },
-
     {
         type: 'active',
         smile: '&#128526;',
@@ -115,6 +114,7 @@ const templateTasks = (task) => {
             title: input.value,
             isDone: task.isDone,
         };
+        saveLocalStorage();
     };
 
     deleteButton.addEventListener('click', () => {
