@@ -10,6 +10,7 @@ const noTaskScreens = [{
         smile: '&#128559;',
         message: 'Список выполненных дел пуст',
     },
+
     {
         type: 'active',
         smile: '&#128526;',
