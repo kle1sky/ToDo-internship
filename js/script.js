@@ -68,7 +68,7 @@ const templateTasks = (task) => {
     <input type="checkbox" />
     <div class="custom-checkbox"></div>
   </label>
-  <input class="todo-title ${task.isDone ? 'todo-title-done' : ''}" type="text" value="${task.title}" readonly />
+  <input class="todo-title ${task.isDone && 'todo-title-done'}" type="text" value="${task.title}" readonly />
   <button class="delete">
     <img src="/img/trash_bin.png" alt="#" />
   </button>`;
@@ -127,7 +127,7 @@ const templateTasks = (task) => {
 
 const resetList = () => {
     todoList.innerHTML = '';
-}
+};
 
 const renderTasks = (tasks) => {
     resetList();
@@ -147,7 +147,7 @@ const renderTasks = (tasks) => {
 
     counter.innerHTML = `${arrTasks.length - tasksDone.length} left`;
 
-    tasksDone.length === arrTasks.length ? inputCheckAll.checked = true : inputCheckAll.checked = false;
+    inputCheckAll.checked = tasksDone.length === arrTasks.length;
 
     if (arrTasks.length === 0) {
         inputCheckAll.disabled = true;
@@ -191,7 +191,7 @@ inputForTasks.addEventListener('input', (e) => {
     if (value === ' ') {
         e.target.value = '';
     }
-})
+});
 
 const createTask = () => {
     const task = {
@@ -202,28 +202,12 @@ const createTask = () => {
     inputForTasks.value = '';
     inputForTasks.focus();
     renderTasks(arrTasks);
-}
-
-const clearDoneTasks = () => {
-    arrTasks = arrTasks.filter((task) => !task.isDone);
-    renderTasks(arrTasks);
 };
-
-buttonClearDone.addEventListener('click', clearDoneTasks);
-
-const markAllTasks = () => {
-    arrTasks.forEach((task) => {
-        inputCheckAll.checked ? task.isDone = true : task.isDone = false;
-    });
-    renderTasks(arrTasks);
-};
-
-inputCheckAll.addEventListener('change', markAllTasks);
 
 const saveLocalStorage = () => {
     localStorage.setItem('tasks', JSON.stringify(arrTasks));
     localStorage.setItem('type', type);
-}
+};
 
 const init = () => {
     tabs.forEach((tab) => {
@@ -231,6 +215,22 @@ const init = () => {
             tab.classList.add('footer__tabs-active');
         };
     });
+    const clearDoneTasks = () => {
+        arrTasks = arrTasks.filter((task) => !task.isDone);
+        renderTasks(arrTasks);
+    };
+
+    buttonClearDone.addEventListener('click', clearDoneTasks);
+
+    const markAllTasks = () => {
+        arrTasks.forEach((task) => {
+            task.isDone = inputCheckAll.checked;
+        });
+        renderTasks(arrTasks);
+    };
+
+    inputCheckAll.addEventListener('change', markAllTasks);
+
     renderTasks(arrTasks);
 };
 
