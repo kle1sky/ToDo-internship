@@ -1,5 +1,7 @@
-let arrTasks = localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [];
-let type = localStorage.getItem('type') ? localStorage.getItem('type') : 'all';
+const localTasks = localStorage.getItem('tasks');
+const localType = localStorage.getItem('type');
+let arrTasks = localTasks ? JSON.parse(localTasks) : [];
+let type = localType ?? 'all';
 
 const noTaskScreens = [{
         type: 'all',
@@ -55,10 +57,6 @@ const onFilterTasks = (e) => {
 
     renderTasks(arrTasks);
 };
-
-tabs.forEach((tab) => {
-    tab.addEventListener('click', onFilterTasks);
-});
 
 const templateTasks = (task) => {
     const el = document.createElement('li');
@@ -155,10 +153,10 @@ const renderTasks = (tasks) => {
         showNoTaskScreen("all");
         saveLocalStorage();
         return;
-    } else {
-        inputCheckAll.disabled = false;
-        footer.classList.remove('footer-hide');
     }
+
+    inputCheckAll.disabled = false;
+    footer.classList.remove('footer-hide');
 
     if (viewTasks.length === 0) {
         showNoTaskScreen(type);
@@ -172,27 +170,6 @@ const renderTasks = (tasks) => {
     saveLocalStorage();
 };
 
-inputForTasks.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter' || !inputForTasks.value) {
-        return;
-    };
-    createTask();
-});
-
-inputForTasks.addEventListener('focusout', () => {
-    if (!inputForTasks.value) {
-        return;
-    }
-    createTask();
-});
-
-inputForTasks.addEventListener('input', (e) => {
-    let value = e.target.value;
-    if (value === ' ') {
-        e.target.value = '';
-    }
-});
-
 const createTask = () => {
     const task = {
         title: inputForTasks.value,
@@ -201,6 +178,18 @@ const createTask = () => {
     arrTasks.push(task);
     inputForTasks.value = '';
     inputForTasks.focus();
+    renderTasks(arrTasks);
+};
+
+const markAllTasks = () => {
+    arrTasks.forEach((task) => {
+        task.isDone = inputCheckAll.checked;
+    });
+    renderTasks(arrTasks);
+};
+
+const clearDoneTasks = () => {
+    arrTasks = arrTasks.filter((task) => !task.isDone);
     renderTasks(arrTasks);
 };
 
@@ -215,21 +204,35 @@ const init = () => {
             tab.classList.add('footer__tabs-active');
         };
     });
-    const clearDoneTasks = () => {
-        arrTasks = arrTasks.filter((task) => !task.isDone);
-        renderTasks(arrTasks);
-    };
 
     buttonClearDone.addEventListener('click', clearDoneTasks);
 
-    const markAllTasks = () => {
-        arrTasks.forEach((task) => {
-            task.isDone = inputCheckAll.checked;
-        });
-        renderTasks(arrTasks);
-    };
-
     inputCheckAll.addEventListener('change', markAllTasks);
+
+    inputForTasks.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' || !inputForTasks.value) {
+            return;
+        };
+        createTask();
+    });
+
+    inputForTasks.addEventListener('focusout', () => {
+        if (!inputForTasks.value) {
+            return;
+        }
+        createTask();
+    });
+
+    inputForTasks.addEventListener('input', (e) => {
+        let value = e.target.value;
+        if (value === ' ') {
+            e.target.value = '';
+        }
+    });
+
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', onFilterTasks);
+    });
 
     renderTasks(arrTasks);
 };
